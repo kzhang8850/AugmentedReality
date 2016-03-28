@@ -20,14 +20,27 @@ while True:
 
 	ret, frame = cam.read()
 
-	ratio = 800.0/frame.shape[1];
-	dim = (800, int(frame.shape[0]*ratio))
+	frame1 = frame
+	frame2 = frame
 
-	resized_frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
-	google_frame = np.hstack((resized_frame, resized_frame))
+
+	ratio = 960.0/frame.shape[1];
+	dim = (960, int(frame.shape[0]*ratio))
+
+	resized_frame1 = cv2.resize(frame1, dim, interpolation=cv2.INTER_AREA)
+	resized_frame2 = cv2.resize(frame2, dim, interpolation=cv2.INTER_AREA)
+
+
+	offset_frame1 = resized_frame1[:,80:960]
+	offset_frame2 = resized_frame2[:,0:880]
+
+
+	google_frame = np.hstack((offset_frame1, offset_frame2))
 
 	#display resulting frame 
+	#cv2.namedWindow('Google Cardboard', cv2.WINDOW_NORMAL)
+	#cv2.setWindowProperty('Google Cardboard', cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
 	cv2.imshow('Google Cardboard', google_frame)
 
 	if cv2.waitKey(1) & 0xFF == ord('q'):

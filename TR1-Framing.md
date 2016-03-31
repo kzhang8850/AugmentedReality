@@ -19,9 +19,9 @@ From now, we plan on creating our MVP (projection of a cube on a post-it). In or
  - Does anyone know anything about a better method to link a PC’s camera to a phone? Current method is laggy and drains a lot of battery
  - We were thinking about potentially giving our VR a better of perception of depth, and an idea we’re thinking of using two cameras with an adjusted algorithm. Anyone have an idea of how to do this or a better idea on how to give depth?
  - Are there any suggestions you would like to offer about the image?
-  -How is the offset between the eyes?
-  -Does the picture seem centered with respect to the camera?
-  -Anyone know anything about Stereoscopy?
+  1. How is the offset between the eyes?
+  2. Does the picture seem centered with respect to the camera?
+  3. Anyone know anything about Stereoscopy?
  - Do you know a way to track the post-it in different lighting conditions?
  - Do you know how to efficiently track the corners of the rectangle?
  - Have you worked with Houghlines, specifically solving the multiple line problem?

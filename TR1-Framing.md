@@ -30,7 +30,7 @@ From now, we plan on creating our MVP (projection of a cube on a post-it). In or
 
 ##Agenda for Technical Review Session
 
-### minute - Talk about what we hope to get out of it, general structure 
+### 1 minute - Talk about what we hope to get out of it, general structure 
 
 We hope to get suggestions from you guys about better methods for several components of our project, and perhaps some additional help on how to proceed forward.
 

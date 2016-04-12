@@ -5,7 +5,7 @@
 The Repository for the Final Project done in Software Design, Spring 2016. 
 
 
-###Created by Kevin Zhang, Cedric Kim, Daniel Daugherty, and Kevin Guo
+#####Created by Kevin Zhang, Cedric Kim, Daniel Daugherty, and Kevin Guo
 
 
 ##What is GetReal?

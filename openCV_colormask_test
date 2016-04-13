@@ -1,0 +1,79 @@
+import cv2
+import numpy as np
+import argparse
+import imutils
+
+def Tracking():
+    camera_feed = cv2.VideoCapture(0)
+
+    while(1):
+
+        _,frame = camera_feed.read()
+        frame = cv2.flip(frame, 1)
+        #Convert the current frame to HSV
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        #Define the threshold for finding a blue object with hsv
+        #lower_blue = np.array([90,50,50])
+        #upper_blue = np.array([110,255,255])
+        green = np.uint8([[[127,255,255]]])
+        hsv_green = cv2.cvtColor(green, cv2.COLOR_BGR2HSV)
+        print hsv_green
+        #lower_green = np.array([29,86,6])
+        lower_green = np.array([30, 50, 30])
+        upper_green = np.array([64,255,255])
+        
+        lower_pink = np.array([20, 20, 255])
+        upper_pink = np.array([40, 255, 255])
+
+        #lower_pink = np.array([20,100,100])
+        #upper_pink = np.array([30,255, 255])
+
+
+        #Create a binary image, where anything blue appears white and everything else is black
+        mask_blue = cv2.inRange(hsv, lower_green, upper_green)
+        mask_pink = cv2.inRange(hsv, lower_pink, upper_pink)
+        #Get rid of background noise using erosion and fill in the holes using dilation and erode the final image on last time
+        element = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
+        mask_blue = cv2.erode(mask_blue,element, iterations=2)
+        mask_blue = cv2.dilate(mask_blue,element,iterations=2)
+        mask_blue = cv2.erode(mask_blue,element)
+
+        mask_pink = cv2.erode(mask_pink,element, iterations=2)
+        mask_pink = cv2.dilate(mask_pink,element,iterations=2)
+        mask_pink = cv2.erode(mask_pink,element)
+        
+        #mask = mask_blue
+        mask = mask_blue + mask_pink
+        #mask = mask_pink
+        #Create Contours for all blue objects
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        center = None
+
+        if len(cnts) > 0:
+            cnt = max(cnts, key = cv2.contourArea)
+            epsilon = 0.08*cv2.arcLength(cnt, True)
+            approx = cv2.approxPolyDP(cnt, epsilon, False)
+
+            points = np.array(approx)
+            cv2.polylines(frame, np.int32([points]), False, (0,0,0), 3)
+            M = cv2.moments(cnt)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+        #Show the original camera feed with a bounding box overlayed 
+        cv2.imshow('frame',frame)
+        #Show the contours in a seperate window
+        cv2.imshow('mask',mask)
+        #Use this command to prevent freezes in the feed
+        k = cv2.waitKey(5) & 0xFF
+        #If escape is pressed close all windows
+        if k == 27:
+            break
+
+    #print q.get()
+
+
+    cv2.destroyAllWindows() 
+
+if __name__ == '__main__':
+    Tracking()

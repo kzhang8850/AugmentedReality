@@ -20,15 +20,16 @@ Using #GetReal requires some extra hardware in addition to software dependencies
 
  - Google Cardboard (or some other VR headset)
  - High Performance Webcam
- - Blue Post-It Notes arranged in a 2x2 square
+ - Two blue post-it notes and a green post-it note to form a right isosceles triangle where the green post-it is at the 90 degree corner
  - other stuff TBD
  
 Once you have all your hardware, you will also need to download Python and the following python packages:
-
- - OpenCV
- - OpenGL
- - Pyglet/Pygame
- - Numpy
+ 
+ - Pip (sudo install pip)
+ - OpenCV (sudo pip install opencv)
+ - OpenGL (download from website www.opengl.org)
+ - Pyglet/Pygame (pip install pygame)
+ - Numpy (pip install numpy)
  - other stuff TBD
  
 After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. Once you have everything set up, just plug it all in and run the program! You should see your CAD model augmented into 3D space where your post it notes were. Have fun prototyping!
@@ -37,3 +38,27 @@ After you have your environment configured, take the CAD file you want to view a
 ##Acknowledgements
 
 The team would like to thank Software Design Teachers Paul Ruvolo, Ben Hill, and Oliver Steele for their guidance and expertise. We would also like to thank the NINJAs Sophia Li, Patrick Huston, Rocco Diverdi, and Lucy Wilcox for their assistance in bugs and roadblocks along the way. Finally, a big thanks from the team to its individuals for sticking it out and accomplishing such an ambitious project in a 6 week time frame.
+
+##License
+
+MIT License
+
+Copyright (c) 2016 #GetReal
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

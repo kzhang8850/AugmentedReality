@@ -8,7 +8,7 @@ import math
 
 class Contours(object):
     def __init__(self, contour_information):
-        
+        pass
 
 
 def program():

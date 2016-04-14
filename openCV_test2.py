@@ -12,28 +12,25 @@ import cv2
 import math
 
 class Contours(object):
-
     def __init__(self):
         """initializes variables"""
-        self.contours = []
         self.contour_list = []
         self.centers = []
 
     def update_contours(self, contour_information):
-        """ creates 4 contours sorted by area size"""
+        """ creates contours sorted by area size"""
         ## grab all the contour information and store the actual contours into contours
-        self.contours = contour_information[0]
+        contours = contour_information[0]
         self.contour_list = []
         ## if the number of contours is atleast 4,
-        if len(self.contours) >= 4:
-            for contour in self.contours:
-                ## add the area of the contours and the contours to a list
+        if len(contours) >= 4:
+            for contour in contours:
+                ## store the area of the contours and the contours in the same list
                 self.contour_list.append((cv2.contourArea(contour),contour))
         ## sort the contours by area
         self.contour_list.sort(key = lambda x: x[0], reverse=True)
 
 class Centers(object):
-
     def __init__(self):
         """initializes variables"""
         self.corners = []
@@ -80,21 +77,11 @@ class Centers(object):
                 self.vectors.append((corner_x - main_corner_x, corner_y - main_corner_y))
 
 
-
-
 def program():
     """runs the program"""
     ## create objects for each class
     contour = Contours()
     center = Centers()
-    ## construct the argument parse and parse the arguments   
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-v", "--video",
-        help="path to the (optional) video file")
-    ap.add_argument("-b", "--buffer", type=int, default=64,
-        help="max buffer size")
-    args = vars(ap.parse_args())
-
     ## define the lower and upper boundaries of the "blue"
     ## define the lower and uppoer boundaries of the "black"
     ## ball in the HSV color space, then initialize the
@@ -104,31 +91,17 @@ def program():
 
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
-    pts = deque(maxlen=args["buffer"])
-     
-    ## if a video path was not supplied, grab the reference
-    ## to the webcam
-    if not args.get("video", False):
-        camera = cv2.VideoCapture(0)
-     
-    ## otherwise, grab a reference to the video file
-    else:
-        camera = cv2.VideoCapture(args["video"])
 
+    cap = cv2.VideoCapture(0)
     ## keep looping
     while True:
         ## grab the current frame
-        (grabbed, frame) = camera.read()
-     
-        ## if we are viewing a video and we did not grab a frame,
-        ## then we have reached the end of the video
-        if args.get("video") and not grabbed:
-            break
-     
+        ret, frame = cap.read()
+    
         ## resize the frame, blur it, and convert it to the HSV
-        ## color space
         frame = imutils.resize(frame, width=600)
         frame = cv2.flip(frame,1)
+        ## color space
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         ## construct a mask for the color "blue", then remove any imperfections
         mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)

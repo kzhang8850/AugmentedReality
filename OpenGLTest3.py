@@ -68,17 +68,19 @@ def main():
         img = numpy.rot90(img)
         img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         # new_img = pyformex.imagearray.rgb2qimage(img)
-        image = pygame.surfarray.make_surface(img)
-        pygame.image.save(image, "img.bmp")
+        # image = pygame.surfarray.make_surface(img)
+        # pygame.image.save(image, "img.bmp")
+        img_data = img.astype('uint8')
 
         # new_img = Image.open("img.bmp")
         # print new_img.format
 
-        draw_background("img.bmp")
+        draw_background(img_data)
+
         
 
-        glRotatef(1, 3, 1, 1)
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
+        # glRotatef(1, 3, 1, 1)
+        # glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
         #Cube()
         # screen.blit(image, (0,0))
         pygame.display.flip()
@@ -86,12 +88,14 @@ def main():
 
 
 
-def draw_background(imname):
+def draw_background(img):
   """  Draw background image using a quad. """
 
   # load background image (should be .bmp) to OpenGL texture
-  bg_image = pygame.image.load(imname).convert()
-  bg_data = pygame.image.tostring(bg_image,"RGBX",1)
+  #bg_image = pygame.image.load(imname).convert()
+  #bg_image = Image.open(imname)
+  #bg_data = numpy.array(list(bg_image.getdata()), numpy.int8)
+  #bg_data = pygame.image.tostring(bg_image,"RGBX", True)
 
 
 
@@ -101,21 +105,22 @@ def draw_background(imname):
 
   # bind the texture
   glEnable(GL_TEXTURE_2D)
+  glPixelStorei(GL_UNPACK_ALIGNMENT,1)
   glBindTexture(GL_TEXTURE_2D,glGenTextures(1))
   pdb.set_trace()
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1000, 747, 0, GL_RGB, GL_UNSIGNED_BYTE, bg_data)
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST)
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST)
-
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1000, 747, 0, GL_RGBA, GL_UNSIGNED_BYTE, img)
+  
   # create quad to fill the whole window
   glBegin(GL_QUADS)
-  # glTexCoord2f(0.0,0.0)
+  glTexCoord2f(0.0,0.0)
   glVertex3f(-1.0,-1.0,-1.0)
-  # glTexCoord2f(1.0,0.0)
+  glTexCoord2f(1.0,0.0)
   glVertex3f( 1.0,-1.0,-1.0)
-  # glTexCoord2f(1.0,1.0)
+  glTexCoord2f(1.0,1.0)
   glVertex3f( 1.0, 1.0,-1.0)
-  # glTexCoord2f(0.0,1.0)
+  glTexCoord2f(0.0,1.0)
   glVertex3f(-1.0, 1.0,-1.0)
   glEnd()
 

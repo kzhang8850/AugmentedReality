@@ -4,7 +4,6 @@
 
 The Repository for the Final Project done in Software Design, Spring 2016. 
 
-
 #####Created by Kevin Zhang, Cedric Kim, Daniel Daugherty, and Kevin Guo
 
 
@@ -34,6 +33,9 @@ Once you have all your hardware, you will also need to download Python and the f
  
 After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. Once you have everything set up, just plug it all in and run the program! You should see your CAD model augmented into 3D space where your post it notes were. Have fun prototyping!
 
+##Usage
+
+Upload an STL file to the program and run GetReal.py to view stl file on stick-note formation
 
 ##Acknowledgements
 

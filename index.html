@@ -28,7 +28,7 @@
 <p>The Repository for the Final Project done in Software Design, Spring 2016. </p>
 
 <h5>
-<a id="created-by-kevin-zhang-cedric-kim-daniel-daugherty-and-kevin-guo" class="anchor" href="#created-by-kevin-zhang-cedric-kim-daniel-daugherty-and-kevin-guo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Created by Kevin Zhang, Cedric Kim, Daniel Daugherty, and Kevin Guo</h5>
+<a id="authors-kevin-zhang-cedric-kim-daniel-daugherty-and-kevin-guo" class="anchor" href="#authors-kevin-zhang-cedric-kim-daniel-daugherty-and-kevin-guo" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors: Kevin Zhang, Cedric Kim, Daniel Daugherty, and Kevin Guo</h5>
 
 <h2>
 <a id="what-is-getreal" class="anchor" href="#what-is-getreal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What is #GetReal?</h2>
@@ -38,33 +38,65 @@
 <p>Using the power of augmented reality, #GetReal levels the playing field. Now you can load up an stl file of a CAD, put on some Virtual Reality Goggles, and see what your CAD would look like in 3D space, all before you even had to touch a single piece of material. Users can have access to the same kind of quick testing that software engineers do, simply making some tweaks in the CAD, re-uploading, and seeing the changes in the real world. #GetReal allows for rapid prototyping and efficient iterations, streamlining the process of development for aspiring mechanical and electrical engineers.</p>
 
 <h2>
-<a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to use</h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
 
 <p>Using #GetReal requires some extra hardware in addition to software dependencies in order to run the code. For external hardware, you will need: </p>
 
 <ul>
 <li>Google Cardboard (or some other VR headset)</li>
 <li>High Performance Webcam</li>
-<li>Blue Post-It Notes arranged in a 2x2 square</li>
+<li>3D Camera Lens (from Amazon)</li>
+<li>A smartphone (ios or android)</li>
+<li>Duet Display (from app store)</li>
+<li>Two blue post-it notes and a green post-it note to form a right isosceles triangle where the green post-it is at the 90 degree corner</li>
 <li>other stuff TBD</li>
 </ul>
 
 <p>Once you have all your hardware, you will also need to download Python and the following python packages:</p>
 
 <ul>
-<li>OpenCV</li>
-<li>OpenGL</li>
-<li>Pyglet/Pygame</li>
-<li>Numpy</li>
+<li>Pip ($sudo install pip)</li>
+<li>OpenCV ($sudo pip install opencv)</li>
+<li>OpenGL (download from website <a href="http://pyopengl.sourceforge.net/documentation/installation.html">http://pyopengl.sourceforge.net/documentation/installation.html</a>)</li>
+<li>Pyglet/Pygame ($pip install pygame)</li>
+<li>Numpy ($pip install numpy)</li>
 <li>other stuff TBD</li>
 </ul>
 
-<p>After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. Once you have everything set up, just plug it all in and run the program! You should see your CAD model augmented into 3D space where your post it notes were. Have fun prototyping!</p>
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. The only required input for the code to run is an .stl file. Once you have everything set up, just plug it all in and run GetReal.py! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes were. Try walking around it and viewing it from different angles, and you should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!</p>
 
 <h2>
 <a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Acknowledgements</h2>
 
 <p>The team would like to thank Software Design Teachers Paul Ruvolo, Ben Hill, and Oliver Steele for their guidance and expertise. We would also like to thank the NINJAs Sophia Li, Patrick Huston, Rocco Diverdi, and Lucy Wilcox for their assistance in bugs and roadblocks along the way. Finally, a big thanks from the team to its individuals for sticking it out and accomplishing such an ambitious project in a 6 week time frame.</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>License</h2>
+
+<p>MIT License</p>
+
+<p>Copyright (c) 2016 #GetReal</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/kzhang8850/AugmentedReality">#GetReal</a> is maintained by <a href="https://github.com/kzhang8850">kzhang8850</a>.</span>

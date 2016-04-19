@@ -76,12 +76,42 @@ class Centers(object):
                 ## create a vector and add it to a list
                 self.vectors.append((corner_x - main_corner_x, corner_y - main_corner_y))
 
+def draw(frame, corners, imgpts):
+    corner = tuple(corners[0].ravel())
+    img = cv2.line(frame, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
+    img = cv2.line(frame, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
+    img = cv2.line(frame, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
+    return img
+
+class Camera(object):
+    def __init__(self):
+        self.objpoints = [] #3d point in real world space
+        self.imgpoints = [] #2d points in image plane.
+        self.ret = None
+        self.mtx = None
+        self.dist = None
+        self.rvecs = None
+        self.tvex = None
+    def grab_frame_information(self, frame, corners):
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        objp = np.zeros((2*2,3), np.float32)
+        objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
+        # Arrays to store object points and image points from all the images.
+        self.objpoints.append(objp)
+        self.imgpoints.append(np.array(corners, dtype = np.float32))
+        print objp
+        print np.array(corners)
+        #cv2.putText(frame, "Hi", (100,100), 
+        #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
+    def calibrate_camera(self, gray):
+        self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
 
 def program():
     """runs the program"""
     ## create objects for each class
     contour = Contours()
     center = Centers()
+    camera = Camera()
     ## define the lower and upper boundaries of the "blue"
     ## define the lower and uppoer boundaries of the "black"
     ## ball in the HSV color space, then initialize the
@@ -111,6 +141,7 @@ def program():
         mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
         ## create edges in which to create contours
         edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
+        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
         ##creates information about the contours
         contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
@@ -125,13 +156,13 @@ def program():
             ## for each corner, color each one a different color
             if i == 0:
                 ##print 'green'
-                cv2.circle(frame, corner, 5, (0,255,0), thickness=-1)
+                cv2.circle(frame, corner, 20, (0,255,0), thickness=-1)
             elif i == 1:
                 ##print 'red'
-                cv2.circle(frame, corner, 5, (0,0,255), thickness=-1)
+                cv2.circle(frame, corner, 15, (0,0,255), thickness=-1)
             elif i == 2:
                 ##print 'yellow'
-                cv2.circle(frame, corner, 5, (0,255,255), thickness=-1)
+                cv2.circle(frame, corner, 10, (0,255,255), thickness=-1)
             else:
                 ##print 'white'
                 cv2.circle(frame, corner, 5, (255,255,255), thickness=-1)
@@ -142,16 +173,26 @@ def program():
             points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
             cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
 
+        # criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+        # axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
+        key = cv2.waitKey(1) & 0xFF
+        # rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners2, mtx, dist)
+        if key == ord("k"):
+            camera.grab_frame_information(frame, center.corners)
+        if key == ord("c"):
+            camera.calibrate_camera(gray)
+
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
         cv2.imshow("MaskBlack", mask_black)
         cv2.imshow('edges', edges)
         cv2.imshow("Frame", frame)
-        key = cv2.waitKey(1) & 0xFF
      
         # if the 'q' key is pressed, stop the loop
         if key == ord("q") or key == 27:
             break
+
     # cleanup the camera and close any open windows
     camera.release()
     cv2.destroyAllWindows();

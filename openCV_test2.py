@@ -18,7 +18,7 @@ class Contours(object):
         self.centers = []
 
     def update_contours(self, contour_information):
-        """ creates contours sorted by area size"""
+        """creates contours sorted by area size (biggest to smallest) from contour_information"""
         ## grab all the contour information and store the actual contours into contours
         contours = contour_information[0]
         self.contour_list = []
@@ -39,15 +39,15 @@ class Centers(object):
         self.vectors = []
 
     def update_centers(self, contour_list, mask_black):
-        """creates 4 corners, and tracks the main corner"""
+        """takes in a list of contours and a masked black frame to creates a tuple of (x,y) coordinates for the center of each contour"""
         ## if there are contours in the list,
         if len(contour_list) > 0:
             self.corners = []
             for i in range(4):
-                ## create a moment
+                ## create a moment (used to find center of contour)
                 M = cv2.moments(contour_list[i][1])
                 if M["m00"] != 0 and M["m00"] != 0:
-                    ## creates a center in the center of the contour
+                    ## creates a (x, y) tuple for the contour
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                     ## add the center to a list
                     self.corners.append(center)
@@ -63,7 +63,7 @@ class Centers(object):
                         self.main_corner = center
 
     def update_vectors(self):
-        """creates vectors from the main corner"""
+        """creates vectors (x,y) reference tuples from the main corner (black corner)"""
         self.vectors = []
         ## for each corner in corners,
         for i, corner in enumerate(self.corners):

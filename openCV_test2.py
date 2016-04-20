@@ -76,30 +76,32 @@ class Centers(object):
                 ## create a vector and add it to a list
                 self.vectors.append((corner_x - main_corner_x, corner_y - main_corner_y))
 
-def draw(frame, corners, imgpts):
-    corner = tuple(corners[0].ravel())
+def draw(frame, corner, imgpts):
+    #corner = tuple(corners[0].ravel())
+    #print corner
     img = cv2.line(frame, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
     img = cv2.line(frame, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
     img = cv2.line(frame, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
-    return img
+    #return imgpts
 
 class Camera(object):
     def __init__(self):
         self.objpoints = [] #3d point in real world space
         self.imgpoints = [] #2d points in image plane.
+        self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        self.objp = np.zeros((2*2,3), np.float32)
+        self.objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
         self.ret = None
         self.mtx = None
         self.dist = None
         self.rvecs = None
         self.tvex = None
+        self.draw_axis = False
     def grab_frame_information(self, frame, corners):
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        objp = np.zeros((2*2,3), np.float32)
-        objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
         # Arrays to store object points and image points from all the images.
-        self.objpoints.append(objp)
+        self.objpoints.append(self.objp)
         self.imgpoints.append(np.array(corners, dtype = np.float32))
-        print objp
+        print self.objp
         print np.array(corners)
         #cv2.putText(frame, "Hi", (100,100), 
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
@@ -182,7 +184,14 @@ def program():
             camera.grab_frame_information(frame, center.corners)
         if key == ord("c"):
             camera.calibrate_camera(gray)
+        if key == ord("d"):
+            camera.draw_axis = not camera.draw_axis
 
+        if camera.draw_axis:
+            axis = np.float32([[1,0,0], [0,1,0], [0,0,-1]]).reshape(-1,3)
+            rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.corners, dtype = np.float32), camera.mtx, camera.dist)
+            imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, camera.mtx, camera.dist)
+            draw(frame, center.main_corner, imgpts)
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
         cv2.imshow("MaskBlack", mask_black)

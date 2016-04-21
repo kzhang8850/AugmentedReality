@@ -1,7 +1,8 @@
-####Kevin Zhang, Kevin Guo, Cedric Kim, Daniel Daugherty
+#####Kevin Zhang, Kevin Guo, Cedric Kim, Daniel Daugherty
 
 # #GetReal
-##Preparation and Framing Document Technical Review 2
+
+##Preparation and Framing Document 
 
 ###Background and Context
 
@@ -25,20 +26,20 @@ From now, we plan on projecting an OpenGL generated cube onto the interface and 
 
 ###Agenda for Technical Review Session
 
- - 1 minute - Talk about what we hope to get out of it, general structure
+####1 minute - Talk about what we hope to get out of it, general structure
 
 We generally understand how to do our project but would like advice on how to improve it and different ways to tackle the problems
 
- - 2 minutes - Overview of project / presentation
+####2 minutes - Overview of project / presentation
 
 Talk about general background, as in what the project is and what we’re doing, how we’ve been doing it
 
- - 10 minutes - Demo of calibration and cube projection
+####10 minutes - Demo of calibration and cube projection
 
 Feedback
 
- - 10 minutes - Demo of OpenGL Cube
+####10 minutes - Demo of OpenGL Cube
 
 Feedback, questions, discussion on combining OpenGL and OpenCV
 
- - 2 minutes - Closing comments
+####2 minutes - Closing comments

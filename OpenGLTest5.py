@@ -86,69 +86,68 @@ def display():
  
    # Render a color-cube consisting of 6 quads with different colors
     glLoadIdentity()                 # Reset the model-view matrix
-    glTranslatef(width/2+100, height/2+100, -10)  # Move right and into the screen
+    glTranslatef(width/2, height/2, 0)  # Move right and into the screen
     glDisable(GL_TEXTURE_2D)
 
-
-
-    0, -25, 0  
-    25, 0, 0
-    50,-25, 0
-    25, -50, 0
-
-
-    0, -25, 50
-    25, 0, 50
-    50,-25, 50
-    25, -50, 50
-
-
-
-
-    glBegin(GL_QUADS)                # Begin drawing the color cube with 6 quads
-      # Top face (y = 1.0f)
-      # Define vertices in counter-clockwise (CCW) order with normal pointing out
-    glColor3f(0.0, 1.0, 0.0)     # Green
-    glVertex3f( 10.0, 10.0, -10.0)
-    glVertex3f(-10.0, 10.0, -10.0)
-    glVertex3f(-10.0, 10.0,  10.0)
-    glVertex3f( 10.0, 10.0,  10.0)
-
-    # Bottom face (y = -1.0f)
-    glColor3f(0.0, 1.0, 0.0)     # Orange
-    glVertex3f( 10.0, -10.0,  10.0)
-    glVertex3f(-10.0, -10.0,  10.0)
-    glVertex3f(-10.0, -10.0, -10.0)
-    glVertex3f( 10.0, -10.0, -10.0)
-
-    # Back face (z = -1.0f)
-    glColor3f(1.0, 1.0, 0.0)     # Yellow
-    glVertex3f( 10.0, -10.0, -10.0)
-    glVertex3f(-10.0, -10.0, -10.0)
-    glVertex3f(-10.0,  10.0, -10.0)
-    glVertex3f( 10.0,  10.0, -10.0)
-
-    # Left face (x = -1.0f)
-    glColor3f(0.0, 0.0, 1.0)     # Blue
-    glVertex3f(-10.0,  10.0,  10.0)
-    glVertex3f(-10.0,  10.0, -10.0)
-    glVertex3f(-10.0, -10.0, -10.0)
-    glVertex3f(-10.0, -10.0,  10.0)
-
-    # Right face (x = 1.0f)
-    glColor3f(1.0, 0.0, 1.0)     # Magenta
-    glVertex3f(10.0,  10.0, -10.0)
-    glVertex3f(10.0,  10.0,  10.0)
-    glVertex3f(10.0, -10.0,  10.0)
-    glVertex3f(10.0, -10.0, -10.0)
-
-    # Front face  (z = 1.0f)
-    glColor3f(1.0, 1.0, 1.0)     # Red
-    glVertex3f( 10.0,  10.0, 10.0)
-    glVertex3f(-10.0,  10.0, 10.0)
-    glVertex3f(-10.0, -10.0, 10.0)
-    glVertex3f( 10.0, -10.0, 10.0)
+    glBegin(GL_QUADS)
+    draw_cube((0, -25, 0),  
+                (25, 0, 0),
+                (50, -25, 0),
+                (25, -50, 0),
+                (0, -25, 50),
+                (25, 0, 50),
+                (50,-25, 50),
+                (25, -50, 50))
     glEnd()  # End of drawing color-cube
+
+    
+
+
+
+    # glBegin(GL_QUADS)                # Begin drawing the color cube with 6 quads
+    #   # Top face (y = 1.0f)
+    #   # Define vertices in counter-clockwise (CCW) order with normal pointing out
+    # glColor3f(0.0, 1.0, 0.0)     # Green
+    # glVertex3f( 25.0, 0.0, 0.0)
+    # glVertex3f( 0.0, 25.0, 0.0)
+    # glVertex3f(-10.0, 10.0,  10.0)
+    # glVertex3f( 10.0, 10.0,  10.0)
+
+    # # Bottom face (y = -1.0f)
+    # glColor3f(0.0, 1.0, 0.0)     # Orange
+    # glVertex3f( 10.0, -10.0,  10.0)
+    # glVertex3f(-10.0, -10.0,  10.0)
+    # glVertex3f(-10.0, -10.0, -10.0)
+    # glVertex3f( 10.0, -10.0, -10.0)
+
+    # # Back face (z = -1.0f)
+    # glColor3f(1.0, 1.0, 0.0)     # Yellow
+    # glVertex3f( 10.0, -10.0, -10.0)
+    # glVertex3f(-10.0, -10.0, -10.0)
+    # glVertex3f( 0.0,  25.0, 0.0)
+    # glVertex3f( 25.0,  0.0, 0.0)
+
+    # # Left face (x = -1.0f)
+    # glColor3f(0.0, 0.0, 1.0)     # Blue
+    # glVertex3f(-10.0,  10.0,  10.0)
+    # glVertex3f(-10.0,  10.0, -10.0)
+    # glVertex3f(-10.0, -10.0, -10.0)
+    # glVertex3f(-10.0, -10.0,  10.0)
+
+    # # Right face (x = 1.0f)
+    # glColor3f(1.0, 0.0, 1.0)     # Magenta
+    # glVertex3f(25.0,  0.0, 0.0)
+    # glVertex3f(10.0,  10.0,  10.0)
+    # glVertex3f(10.0, -10.0,  10.0)
+    # glVertex3f(10.0, -10.0, -10.0)
+
+    # # Front face  (z = 1.0f)
+    # glColor3f(1.0, 1.0, 1.0)     # Red
+    # glVertex3f( 10.0,  10.0, 10.0)
+    # glVertex3f(-10.0,  10.0, 10.0)
+    # glVertex3f(-10.0, -10.0, 10.0)
+    # glVertex3f( 10.0, -10.0, 10.0)
+    # glEnd()  # End of drawing color-cube
 
     glFlush()  
     glutSwapBuffers()  # Swap the front and back frame buffers (double buffering)
@@ -172,6 +171,45 @@ def reshape(width, height):   # GLsizei for non-negative integer
 
    glMatrixMode(GL_MODELVIEW)
    glLoadIdentity()
+
+def draw_cube(p1, p2, p3, p4, p5, p6, p7, p8):
+    
+    #Top Face
+    glColor3f(0.0, 1.0, 0.0)     # Green
+    glVertex3f(p1[0], p1[1], p1[2])
+    glVertex3f(p2[0], p2[1], p1[2])
+    glVertex3f(p3[0], p3[1], p3[2])
+    glVertex3f(p4[0], p4[1], p4[2])
+    # Bottom face (y = -1.0f)
+    glColor3f(0.0, 0.0, 0.0)     # Orange
+    glVertex3f(p1[0], p1[1], p1[2])
+    glVertex3f(p5[0], p5[1], p5[2])
+    glVertex3f(p8[0], p8[1], p8[2])
+    glVertex3f(p4[0], p4[1], p4[2])
+    # Back face (z = -1.0f)
+    glColor3f(1.0, 1.0, 0.0)     # Yellow
+    glVertex3f(p4[0], p4[1], p4[2])
+    glVertex3f(p8[0], p4[1], p4[2])
+    glVertex3f(p7[0], p7[1], p7[2])
+    glVertex3f(p3[0], p3[1], p3[2])
+    # Left face (x = -1.0f)
+    glColor3f(0.0, 0.0, 1.0)     # Blue
+    glVertex3f(p3[0], p3[1], p3[2])
+    glVertex3f(p7[0], p7[1], p7[2])
+    glVertex3f(p6[0], p6[1], p6[2])
+    glVertex3f(p2[0], p6[1], p6[2])
+    # Right face (x = 1.0f)
+    glColor3f(1.0, 0.0, 1.0)     # Magenta
+    glVertex3f(p5[0], p5[1], p5[2])
+    glVertex3f(p6[0], p6[1], p6[2])
+    glVertex3f(p7[0], p7[1], p7[2])
+    glVertex3f(p8[0], p8[1], p8[2])
+    # Front face  (z = 1.0f)
+    glColor3f(1.0, 1.0, 1.0)     # Red
+    glVertex3f(p1[0], p1[1], p1[2])
+    glVertex3f(p5[0], p5[1], p5[2])
+    glVertex3f(p6[0], p6[1], p6[2])
+    glVertex3f(p2[0], p6[1], p6[2])
 
 def cube_vertices(position, width):
     """ 

@@ -32,6 +32,12 @@ def init():
     glutKeyboardFunc(keyboard)
     glutIdleFunc(idle)  
 
+    glEnable(GL_TEXTURE_2D)
+    glClearDepth(1.0)
+    glEnable(GL_DEPTH_TEST)
+    glDepthFunc(GL_LEQUAL)
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+
 def idle():
     #capture next frame
 
@@ -55,10 +61,7 @@ def idle():
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glEnable(GL_TEXTURE_2D)
-    #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-    #glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-    #glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+
     #this one is necessary with texture2d for some reason
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
@@ -83,6 +86,8 @@ def display():
     glVertex2f(0.0, height)
     glEnd()
 
+
+
     # glBegin(GL_QUADS)
     # glColor3f(1,0,0)
     # glVertex2i(400,400)
@@ -95,15 +100,63 @@ def display():
     # glColor3f(1,1,1)
     # glEnd()
 
-    gluPerspective(60, (1280/720), 0, 800.0)
+    # glBegin(GL_QUADS)
+    # glVertex3f(400, 400, 0)
+    # glVertex3f(200, 400, 0)
+    # glVertex3f(200, 200, 0)
+    # glVertex3f(400, 200, 0)
+    # glEnd()
 
-    vertices = cube_vertices([1,1,1], 50)
+  
+    vertices = cube_vertices([0,0,-100], 100)
 
+    # print vertices[60],vertices[61],vertices[62]
+
+    glLoadIdentity()
+    glTranslatef(width/2, height/2, 0)
     glBegin(GL_QUADS)
-    for vertex in vertices:
-        glVertex3f(vertex)
-    glEnd()
 
+    #Bottom
+    glColor3f(1,0,0)
+    glVertex3f(vertices[12], vertices[13], vertices[14])
+    glVertex3f(vertices[15], vertices[16], vertices[17])
+    glVertex3f(vertices[18], vertices[19], vertices[20])
+    glVertex3f(vertices[21], vertices[22], vertices[23])
+    #Left
+    glColor3f(0,0,1)
+    glVertex3f(vertices[24], vertices[25], vertices[26])
+    glVertex3f(vertices[27], vertices[28], vertices[29])
+    glVertex3f(vertices[30], vertices[31], vertices[32])
+    glVertex3f(vertices[33], vertices[34], vertices[35])
+    #Top
+    glColor3f(1,0,0)
+    glVertex3f(vertices[0], vertices[1], vertices[2])
+    glVertex3f(vertices[3], vertices[4], vertices[5])
+    glVertex3f(vertices[6], vertices[7], vertices[8])
+    glVertex3f(vertices[9], vertices[10], vertices[11])
+    #Right
+    glColor3f(0,1,0)
+    glVertex3f(vertices[36], vertices[37], vertices[38])
+    glVertex3f(vertices[39], vertices[40], vertices[41])
+    glVertex3f(vertices[42], vertices[43], vertices[44])
+    glVertex3f(vertices[45], vertices[46], vertices[47])
+    #Back
+    glColor3f(1,0,0)
+    glVertex3f(vertices[60], vertices[61], vertices[62])
+    glVertex3f(vertices[63], vertices[64], vertices[65])
+    glVertex3f(vertices[66], vertices[67], vertices[68])
+    glVertex3f(vertices[69], vertices[70], vertices[71])
+    #Front
+    glColor3f(1,0,0)
+    glVertex3f(vertices[48], vertices[49], vertices[50])
+    glVertex3f(vertices[51], vertices[52], vertices[53])
+    glVertex3f(vertices[54], vertices[55], vertices[56])
+    glVertex3f(vertices[57], vertices[58], vertices[59])
+
+
+    glColor3f(1,1,1)
+
+    glEnd()
 
 
     glFlush()
@@ -117,6 +170,8 @@ def reshape(w, h):
     glMatrixMode(GL_PROJECTION)
 
     glLoadIdentity()
+    gluPerspective(45, (width/height), 0.1, 500.0)
+
     # allows for reshaping the window without distoring shape
 
     if w <= h:
@@ -128,22 +183,8 @@ def reshape(w, h):
     glLoadIdentity()
 
 
-def cube_vertices(position, width):
-    """ 
-    Return the vertices of the cube at position (x, y, z) with a given size.
-    """
-    x, y, z = position
-    n = width / 2.0 #distance of faces from the cube's center
 
-    return [
-        #lower left  #lower right #upper right #upper left
-        x-n,y+n,z-n, x-n,y+n,z+n, x+n,y+n,z+n, x+n,y+n,z-n,  #top
-        x-n,y-n,z-n, x+n,y-n,z-n, x+n,y-n,z+n, x-n,y-n,z+n,  #bottom
-        x-n,y-n,z-n, x-n,y-n,z+n, x-n,y+n,z+n, x-n,y+n,z-n,  #left
-        x+n,y-n,z+n, x+n,y-n,z-n, x+n,y+n,z-n, x+n,y+n,z+n,  #right
-        x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n,  #front
-        x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n   #back
-    ]
+
 
 
 def keyboard(key, x, y):

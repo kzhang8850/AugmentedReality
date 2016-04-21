@@ -1,134 +1,107 @@
-"""
-Visualization Controller for Augmented Reality, #GetReal
-Takes a set of coordinates and renders a 3D image on a background frame
-Currently doing a cube, wil do CAD soon
-
-In Progress
-
-Daniel Daugherty and Kevin Zhang, Cedric Kim, and Kevin Guo
-Software Design Spring 2016
-"""
-
-import pyglet
-from pyglet.gl import *
-from pyglet.window import key
+import cv2
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import cv2
-import numpy
-from PIL import *
-
-#Creates the window for pyglet to render everything in, also initializes the camera
-window = pyglet.window.Window(800,600)
-camera = cv2.VideoCapture(0)
-global d
+from OpenGL.GLUT import *
+import numpy as np
+import sys
 
 
-"""
-Work in Progress - Cube
-"""
-verticies = (
-    (1, 400, 1),
-    (1, 1, 1),
-    (400, 1, 1),
-    (400, 400, 1),
-    (1, 400, 25),
-    (1, 1, 25),
-    (400, 400, 25),
-    (400, 1, 25)
-    )
+def initGL():
+   glClearColor(0.0, 0.0, 0.0, 1.0) # Set background color to black and opaque
+   glClearDepth(1.0)                   # Set background depth to farthest
+   glEnable(GL_DEPTH_TEST)   # Enable depth testing for z-culling
+   glDepthFunc(GL_LEQUAL)    # Set the type of depth-test
+   glShadeModel(GL_SMOOTH)   # Enable smooth shading
+   glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)  # Nice perspective corrections
 
-edges = (
-    (0,1),
-    (0,3),
-    (0,4),
-    (2,1),
-    (2,3),
-    (2,7),
-    (6,3),
-    (6,4),
-    (6,7),
-    (5,1),
-    (5,4),
-    (5,7)
-    )
+ 
 
-gluPerspective(2, (800/600), 200, 800.0)
+def display(): 
+   	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT) # Clear color and depth buffers
+   	glMatrixMode(GL_MODELVIEW)     # To operate on model-view matrix
+ 
+   # Render a color-cube consisting of 6 quads with different colors
+   	glLoadIdentity()                 # Reset the model-view matrix
+   	glTranslatef(1.5, -2, -10.0)  # Move right and into the screen
+ 
+   	glBegin(GL_QUADS)                # Begin drawing the color cube with 6 quads
+      # Define vertices in counter-clockwise (CCW) order with normal pointing out
+	# Bottom face (y = -1.0f)
+	glColor3f(1.0, 0.5, 0.0)     # Orange
+	glVertex3f( 1.0, -1.0,  1.0)
+	glVertex3f(-1.0, -1.0,  1.0)
+	glVertex3f(-1.0, -1.0, -1.0)
+	glVertex3f( 1.0, -1.0, -1.0)
 
-# glTranslatef(0.0,0.0, -5)
+	# Back face (z = -1.0f)
+	glColor3f(1.0, 1.0, 0.0)     # Yellow
+	glVertex3f( 1.0, -1.0, -1.0)
+	glVertex3f(-1.0, -1.0, -1.0)
+	glVertex3f(-1.0,  1.0, -1.0)
+	glVertex3f( 1.0,  1.0, -1.0)
 
-def update(dt):
-	"""
-	WTF is this function
-	"""
-	retval,img = camera.read()     #reads camera
-	# img = cv2.flip(img, 0)         #flips frame because for some reason it comes upside down
-	# img = cv2.resize(img, (800, 600))   #resizes image
-	# sy,sx,number_of_channels = img.shape    #divides data into matrix dimensions
-	# number_of_bytes = sy*sx*number_of_channels    #transforms matrix into an array of data
+	# Left face (x = -1.0f)
+	glColor3f(0.0, 0.0, 1.0)     # Blue
+	glVertex3f(-1.0,  1.0,  1.0)
+	glVertex3f(-1.0,  1.0, -1.0)
+	glVertex3f(-1.0, -1.0, -1.0)
+	glVertex3f(-1.0, -1.0,  1.0)
 
-	# img = img.ravel()   #idk
+	# Right face (x = 1.0f)
+	glColor3f(1.0, 0.0, 1.0)     # Magenta
+	glVertex3f(1.0,  1.0, -1.0)
+	glVertex3f(1.0,  1.0,  1.0)
+	glVertex3f(1.0, -1.0,  1.0)
+	glVertex3f(1.0, -1.0, -1.0)
 
-	# image_texture = (GLubyte * number_of_bytes)( *img.astype('uint8') )  #converts data into OpenGL format with GLubyte
+	# Top Face
+	glColor3f(0.0, 1.0, 0.0)     # Green
+	glVertex3f( 1.0, 1.0, -1.0)
+	glVertex3f(-1.0, 1.0, -1.0)
+	glVertex3f(-1.0, 1.0,  1.0)
+	glVertex3f( 1.0, 1.0,  1.0)
+ 
+   	# Front face  (z = 1.0f)
+	glColor3f(1.0, 1.0, 0.0)     # Red
+	glVertex3f( 1.0,  1.0, 1.0)
+	glVertex3f(-1.0,  1.0, 1.0)
+	glVertex3f(-1.0, -1.0, 1.0)
+	glVertex3f( 1.0, -1.0, 1.0)
 
-	# pImg = pyglet.image.ImageData(sx, sy, 'BGR', image_texture, pitch = sx*number_of_channels)   #creates new texture render with formatted data
-	# pImg.blit(0,0)    #puts new image thing onto window
-
-
-	window.clear()         #clears previous stuff on window
-
-	
-#window.event required by pyglet to run functions based on events/continually
-@window.event
-def on_key_press(symbol, modifiers):
-	"""
-	Allows for testing and experimentation
-	Closes program on pressing esc key
-	"""
-
-	if symbol == key.ESCAPE:
-	    print 'Application Exited with Key Press'
-	    window.close()
-
-@window.event
-def on_draw():
-	"""
-	Does the rendering
-	Converts OpenCV frame into OpenGL format
-	Overlays a Cube on top of the frame
-	"""
-	
-
-
-	"""
-	Work in Progress - Cube
-	"""
-	# glRotatef(1, 3, 1, 1)
-	glBegin(GL_LINES)
-	glColor3f(1,0,0)
-	for edge in edges:
-		for vertex in edge:
-			glVertex3fv(verticies[vertex])
-
-	glColor3f(1,1,1)
 	glEnd()
+ 
+   
+   	glutSwapBuffers()  # Swap the front and back frame buffers (double buffering)
 
+ 
 
-	#Creates a colorful square to be rendered on top of the frame
-	# glBegin(GL_QUADS)
-	# glColor3f(1,0,0)
-	# glVertex2i(400,400)
-	# glColor3f(0,1,0)
-	# glVertex2i(400,200)
-	# glColor3f(0,0,1)
-	# glVertex2i(200,200)
-	# glColor3f(0,1,1)
-	# glVertex2i(200,400)
-	# glColor3f(1,1,1)
-	# glEnd()
-	# cv2.waitKey(1)
+def reshape(width, height):  # GLsizei for non-negative integer
+   # Compute aspect ratio of the new window
+   if (height == 0):
+   		height = 1                # To prevent divide by 0
+   		
+   aspect = width / height
+ 
+   # Set the viewport to cover the new window
+   glViewport(0, 0, width, height)
+ 
+   # Set the aspect ratio of the clipping volume to match the viewport
+   glMatrixMode(GL_PROJECTION)  # To operate on the Projection matrix
+   glLoadIdentity()             # Reset
+   # Enable perspective projection with fovy, aspect, zNear and zFar
+   gluPerspective(45.0, aspect, 0.1, 100.0)
 
+ 
 
+def main():
+   glutInit(sys.argv)            # Initialize GLUT
+   glutInitDisplayMode(GLUT_DOUBLE) # Enable double buffered mode
+   glutInitWindowSize(640, 480)   # Set the window's initial width & height
+   glutInitWindowPosition(50, 50) # Position the window's initial top-left corner
+   glutCreateWindow("TEST")          # Create window with the given title
+   glutDisplayFunc(display)       # Register callback handler for window re-paint event
+   glutReshapeFunc(reshape)       # Register callback handler for window re-size event
+   initGL()                       # Our own OpenGL initialization
+   glutMainLoop()                 # Enter the infinite event-processing loop
 
-pyglet.clock.schedule(update)     #creates a timer that runs update which runs on_draw at set intervals
-pyglet.app.run()   #launches the program and starts processing of window events, timers, etc.
+main()

@@ -17,6 +17,7 @@ from OpenGL.GLU import *
 import cv2
 import numpy
 import Image
+from PIL import *
 
 i=0
 imagecam = None
@@ -26,38 +27,40 @@ camera = cv2.VideoCapture(0)
 temp = pyglet.image.load('immortalsfeat.jpg')
 sprite = pyglet.sprite.Sprite(temp)
 
+global d
+
 
 
 """
 Work in Progress - Cube
 """
-# verticies = (
-#     (0, 50, 1),
-#     (0, 0, 1),
-#     (50, 0, 1),
-#     (50, 50, 1),
-#     (0, 50, 25),
-#     (0, 0, 25),
-#     (50, 50, 25),
-#     (50, 0, 25)
-#     )
+verticies = (
+    (1, 400, 1),
+    (1, 1, 1),
+    (400, 1, 1),
+    (400, 400, 1),
+    (1, 400, 25),
+    (1, 1, 25),
+    (400, 400, 25),
+    (400, 1, 25)
+    )
 
-# edges = (
-#     (0,1),
-#     (0,3),
-#     (0,4),
-#     (2,1),
-#     (2,3),
-#     (2,7),
-#     (6,3),
-#     (6,4),
-#     (6,7),
-#     (5,1),
-#     (5,4),
-#     (5,7)
-#     )
+edges = (
+    (0,1),
+    (0,3),
+    (0,4),
+    (2,1),
+    (2,3),
+    (2,7),
+    (6,3),
+    (6,4),
+    (6,7),
+    (5,1),
+    (5,4),
+    (5,7)
+    )
 
-# gluPerspective(145, (800/600), 0.1, 800.0)
+gluPerspective(2, (800/600), 200, 800.0)
 
 # glTranslatef(0.0,0.0, -5)
 
@@ -93,6 +96,19 @@ def update(dt):
 	sprite.scale = get_scale(window,imagecam)
 	sprite.x = 0
 	sprite.y = 0
+	retval,img = camera.read()     #reads camera
+	# img = cv2.flip(img, 0)         #flips frame because for some reason it comes upside down
+	# img = cv2.resize(img, (800, 600))   #resizes image
+	# sy,sx,number_of_channels = img.shape    #divides data into matrix dimensions
+	# number_of_bytes = sy*sx*number_of_channels    #transforms matrix into an array of data
+
+	# img = img.ravel()   #idk
+
+	# image_texture = (GLubyte * number_of_bytes)( *img.astype('uint8') )  #converts data into OpenGL format with GLubyte
+
+	# pImg = pyglet.image.ImageData(sx, sy, 'BGR', image_texture, pitch = sx*number_of_channels)   #creates new texture render with formatted data
+	# pImg.blit(0,0)    #puts new image thing onto window
+
 
 	window.clear()         #clears previous stuff on window
 
@@ -119,6 +135,7 @@ def on_draw():
 
 
 
+
 	sprite.draw()
 
 	# img = cv2.flip(img, 0)         #flips frame because for some reason it comes upside down
@@ -137,6 +154,7 @@ def on_draw():
 	# pImg.blit(0,0)    #puts new image thing onto window
 
 
+
 	# cv2.imshow('my_image', img)
 	# cv2.waitKey(5)
 
@@ -144,14 +162,14 @@ def on_draw():
 	Work in Progress - Cube
 	"""
 	# glRotatef(1, 3, 1, 1)
-	# glBegin(GL_LINES)
-	# glColor3f(1,0,0)
-	# for edge in edges:
-	# 	for vertex in edge:
-	# 		glVertex3fv(verticies[vertex])
+	glBegin(GL_LINES)
+	glColor3f(1,0,0)
+	for edge in edges:
+		for vertex in edge:
+			glVertex3fv(verticies[vertex])
 
-	# glColor3f(1,1,1)
-	# glEnd()
+	glColor3f(1,1,1)
+	glEnd()
 
 
 	#Creates a colorful square to be rendered on top of the frame
@@ -171,4 +189,5 @@ def on_draw():
 
 
 pyglet.clock.schedule_interval(update, .01)     #creates a timer that runs update which runs on_draw at set intervals
+
 pyglet.app.run()   #launches the program and starts processing of window events, timers, etc.

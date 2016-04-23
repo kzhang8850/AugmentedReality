@@ -27,11 +27,11 @@ Using #GetReal requires some extra hardware in addition to software dependencies
  
 Once you have all your hardware, you will also need to download Python and the following python packages:
  
- - Pip ($sudo install pip)
- - OpenCV ($sudo pip install opencv)
+ - Pip `$sudo install pip`
+ - OpenCV `$sudo pip install opencv`
  - OpenGL (download from website http://pyopengl.sourceforge.net/documentation/installation.html)
- - Pyglet/Pygame ($pip install pygame)
- - Numpy ($pip install numpy)
+ - Pyglet/Pygame `$pip install pygame`
+ - Numpy `$pip install numpy`
  - other stuff TBD
  
 

@@ -56,7 +56,7 @@ def idle():
     cv2.imshow('frame',image)
     glutPostRedisplay()
 
- 
+
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -85,8 +85,9 @@ def display():
     glEnd()
  
    # Render a color-cube consisting of 6 quads with different colors
-    glLoadIdentity()                 # Reset the model-view matrix
-    glTranslatef(width/2, height/2, 0)  # Move right and into the screen
+    glLoadIdentity()               # Reset the model-view matrix
+    glTranslatef(width/2, height/2, -50)  # Move right and into the screen
+    # glTranslatef(1.5, -2, -10)  # Move right and into the screen
     glDisable(GL_TEXTURE_2D)
 
     glBegin(GL_QUADS)
@@ -108,45 +109,46 @@ def display():
     #   # Top face (y = 1.0f)
     #   # Define vertices in counter-clockwise (CCW) order with normal pointing out
     # glColor3f(0.0, 1.0, 0.0)     # Green
-    # glVertex3f( 25.0, 0.0, 0.0)
-    # glVertex3f( 0.0, 25.0, 0.0)
-    # glVertex3f(-10.0, 10.0,  10.0)
-    # glVertex3f( 10.0, 10.0,  10.0)
+    # glVertex3f( 1.0, 1.0, -1.0)
+    # glVertex3f(-1.0, 1.0, -1.0)
+    # glVertex3f(-1.0, 1.0,  1.0)
+    # glVertex3f( 1.0, 1.0,  1.0)
 
     # # Bottom face (y = -1.0f)
     # glColor3f(0.0, 1.0, 0.0)     # Orange
-    # glVertex3f( 10.0, -10.0,  10.0)
-    # glVertex3f(-10.0, -10.0,  10.0)
-    # glVertex3f(-10.0, -10.0, -10.0)
-    # glVertex3f( 10.0, -10.0, -10.0)
+    # glVertex3f( 1.0, -1.0,  1.0)
+    # glVertex3f(-1.0, -1.0,  1.0)
+    # glVertex3f(-1.0, -1.0, -1.0)
+    # glVertex3f( 1.0, -1.0, -1.0)
 
     # # Back face (z = -1.0f)
     # glColor3f(1.0, 1.0, 0.0)     # Yellow
-    # glVertex3f( 10.0, -10.0, -10.0)
-    # glVertex3f(-10.0, -10.0, -10.0)
-    # glVertex3f( 0.0,  25.0, 0.0)
-    # glVertex3f( 25.0,  0.0, 0.0)
+    # glVertex3f( 1.0, -1.0, -1.0)
+    # glVertex3f(-1.0, -1.0, -1.0)
+    # glVertex3f(-1.0,  1.0, -1.0)
+    # glVertex3f( 1.0,  1.0, -1.0)
 
     # # Left face (x = -1.0f)
     # glColor3f(0.0, 0.0, 1.0)     # Blue
-    # glVertex3f(-10.0,  10.0,  10.0)
-    # glVertex3f(-10.0,  10.0, -10.0)
-    # glVertex3f(-10.0, -10.0, -10.0)
-    # glVertex3f(-10.0, -10.0,  10.0)
+    # glVertex3f(-1.0,  1.0,  1.0)
+    # glVertex3f(-1.0,  1.0, -1.0)
+    # glVertex3f(-1.0, -1.0, -1.0)
+    # glVertex3f(-1.0, -1.0,  1.0)
 
     # # Right face (x = 1.0f)
     # glColor3f(1.0, 0.0, 1.0)     # Magenta
-    # glVertex3f(25.0,  0.0, 0.0)
-    # glVertex3f(10.0,  10.0,  10.0)
-    # glVertex3f(10.0, -10.0,  10.0)
-    # glVertex3f(10.0, -10.0, -10.0)
+    # glVertex3f(1.0,  1.0, -1.0)
+    # glVertex3f(1.0,  1.0,  1.0)
+    # glVertex3f(1.0, -1.0,  1.0)
+    # glVertex3f(1.0, -1.0, -1.0)
 
     # # Front face  (z = 1.0f)
     # glColor3f(1.0, 1.0, 1.0)     # Red
-    # glVertex3f( 10.0,  10.0, 10.0)
-    # glVertex3f(-10.0,  10.0, 10.0)
-    # glVertex3f(-10.0, -10.0, 10.0)
-    # glVertex3f( 10.0, -10.0, 10.0)
+    # glVertex3f( 1.0,  1.0, 1.0)
+    # glVertex3f(-1.0,  1.0, 1.0)
+    # glVertex3f(-1.0, -1.0, 1.0)
+    # glVertex3f( 1.0, -1.0, 1.0)
+
     # glEnd()  # End of drawing color-cube
 
     glFlush()  
@@ -167,7 +169,7 @@ def reshape(width, height):   # GLsizei for non-negative integer
    glMatrixMode(GL_PROJECTION)  # To operate on the Projection matrix
    glLoadIdentity()             # Reset
    # Enable perspective projection with fovy, aspect, zNear and zFar
-   gluPerspective(100.0, aspect, 0.1, 100.0)
+   gluPerspective(45.0, aspect, 0.1, 100.0)
 
    glMatrixMode(GL_MODELVIEW)
    glLoadIdentity()

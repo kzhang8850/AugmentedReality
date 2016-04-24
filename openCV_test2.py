@@ -154,6 +154,7 @@ def return_closest_quadrant(main_corner, point_1, point_2, point_3):
         if i not in quadrants:
             empty_quadrants.append(i)
     return return_most_clockwise_quadrant(empty_quadrants)
+    
 def return_most_clockwise_quadrant(empty_quadrants):
     """returns the most clockwise quadrant the points are not in"""
     if len(empty_quadrants) == 1:

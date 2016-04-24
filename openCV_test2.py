@@ -149,7 +149,7 @@ def return_closest_quadrant(main_corner, point_1, point_2, point_3):
     quadrants.append(return_quadrant(reference_point_2))
     quadrants.append(return_quadrant(reference_point_3))
     empty_quadrants = []
-    ## find quadrants the points are not in,
+    ## find quadrants the points are not in
     for i in range(1, 5):
         if i not in quadrants:
             empty_quadrants.append(i)

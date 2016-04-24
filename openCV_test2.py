@@ -77,27 +77,35 @@ class Centers(object):
                 ## create a vector and add it to a list
                 self.vectors.append((corner_x - main_corner_x, corner_y - main_corner_y))
     def reorganize_centers(self):
+        """reorganizes the centers so that they are in correct relation to each other"""
+        ## final_corners is the final list of organized corners
         self.final_corners = []
         self.final_corners.append(self.main_corner)
         corners = []
+        ## for each corner, only add the corner if it isnt the main corner
         for i, corner in enumerate(self.corners):
             if not(self.main_corner[0] == corner[0] and self.main_corner[1] == corner[1]):
                 corners.append(corner)
-
+        ## save the fourth corner
         corner_4 = return_point_4(self.main_corner, corners[0], corners[1], corners[2])
+        ## find the quadrant clockwise to the quadrant the corners are occupying
         quadrant = return_closest_quadrant(self.main_corner, corners[0], corners[1], corners[2])
         potential_points = []
-
+        ## for each corner (this finds potential points for corner_2)
         for corner in corners:
+            ## if the corner is not corner 4,
             if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
                 check_quadrant = quadrant + 1
                 if check_quadrant == 5:
                     check_quadrant = 1
+                ## if the corner is within the quadrant after check quadrant,
                 if check_quadrant == return_quadrant((corner[0] - self.main_corner[0], corner[1] - self.main_corner[1])):
+                    ## add this to potential_points
                     potential_points.append(corner)
         corner_2 = (0,0)
         corner_3 = (0,0)
         if len(potential_points) > 0:
+            ## pass potential points into return_point_2
             corner_2 = return_point_2(quadrant, self.main_corner, potential_points)
 
         for corner in corners:
@@ -109,9 +117,12 @@ class Centers(object):
         self.final_corners.append(corner_4)
 
 def return_point_2(quadrant, main_corner, potential_points):
+    """checks the angle in order to find corner_2"""
+    ## if the length is one, return it
     if len(potential_points) == 1:
         return potential_points[0]
     else:
+        ## create reference points in order to find the angle
         if quadrant == 1:
             reference_point = (main_corner[0], main_corner[1] - 10)
         elif quadrant == 2:
@@ -122,12 +133,14 @@ def return_point_2(quadrant, main_corner, potential_points):
             reference_point = (main_corner[0] + 10, main_corner[1])
         angle_1 = get_angle(main_corner, reference_point, potential_points[0])
         angle_2 = get_angle(main_corner, reference_point, potential_points[1])
+        ## if the angle is smaller, return that point
         if angle_1 < angle_2:
             return potential_points[0]
         else:
             return potential_points[1]
 
 def return_closest_quadrant(main_corner, point_1, point_2, point_3):
+    """creates empty quadrants and uses return_most_clockwise_quadrant"""
     reference_point_1 = (point_1[0] - main_corner[0], point_1[1] - main_corner[1])
     reference_point_2 = (point_2[0] - main_corner[0], point_2[1] - main_corner[1])
     reference_point_3 = (point_3[0] - main_corner[0], point_3[1] - main_corner[1])
@@ -136,18 +149,25 @@ def return_closest_quadrant(main_corner, point_1, point_2, point_3):
     quadrants.append(return_quadrant(reference_point_2))
     quadrants.append(return_quadrant(reference_point_3))
     empty_quadrants = []
+    ## find quadrants the points are not in,
     for i in range(1, 5):
         if i not in quadrants:
             empty_quadrants.append(i)
+    return return_most_clockwise_quadrant(empty_quadrants)
+def return_most_clockwise_quadrant(empty_quadrants):
+    """returns the most clockwise quadrant the points are not in"""
     if len(empty_quadrants) == 1:
         return empty_quadrants[0]
-    if len(empty_quadrants) == 2 and empty_quadrants[0] == 1 and empty_quadrants[1] == 4:
-        return 1
-    elif len(empty_quadrants) == 3 and empty_quadrants[1] == 1 and empty_quadrants[2] == 4:
-        return 1
-    else:
-        if len(empty_quadrants) == 2:
+    elif len(empty_quadrants) == 2:
+        if empty_quadrants[0] == 1 and empty_quadrants[1] == 4:
+            return 1
+        else:
             return empty_quadrants[1]
+    elif len(empty_quadrants) == 3:
+        if empty_quadrants[0] == 1 and empty_quadrants[1] == 3 and empty_quadrants[2] == 4:
+            return 1
+        elif empty_quadrants[0] == 1 and empty_quadrants[1] == 2 and empty_quadrants[2] == 4:
+            return 2
         else:
             return empty_quadrants[2]
 
@@ -162,10 +182,12 @@ def return_quadrant(point):
         return 4
 
 def return_point_4(main_corner, point_1, point_2, point_3):
+    """returns the fourth corner"""
     angle_1 = get_angle(main_corner, point_1, point_2)
     angle_2 = get_angle(main_corner, point_1, point_3)
     angle_3 = get_angle(main_corner, point_2, point_3)
-    #print "1:", angle_1, "   2:", angle_2, "  3:", angle_3
+    ## find the angle between the corners, only one is greater that the other
+    ## this way we can find the corner diagonal to the main corner
     if(angle_1 > angle_2 and angle_1 > angle_3):
         return point_3
     elif(angle_2 > angle_3):
@@ -212,22 +234,22 @@ class Camera(object):
 def draw(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
-    img = cv2.line(frame, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
-    img = cv2.line(frame, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
-    img = cv2.line(frame, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
+    cv2.line(frame, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
+    cv2.line(frame, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
+    cv2.line(frame, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
 
 def draw_cube(frame, corner, imgpts):
     imgpts = np.int32(imgpts).reshape(-1,2)
 
     # draw ground floor in green
-    img = cv2.drawContours(frame, [imgpts[:4]],-1,(255),3)
+    cv2.drawContours(frame, [imgpts[:4]],-1,(255),3)
 
     # draw pillars in blue color
     for i,j in zip(range(4),range(4,8)):
-        img = cv2.line(frame, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
+        cv2.line(frame, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
 
     # draw top layer in red color
-    img = cv2.drawContours(frame, [imgpts[4:]],-1,(255),3)
+    cv2.drawContours(frame, [imgpts[4:]],-1,(255),3)
 
 def program():
     """runs the program"""
@@ -277,29 +299,30 @@ def program():
             center.reorganize_centers()
         center.update_vectors()
 
-       
-
-        # criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-        # axis = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3)
         key = cv2.waitKey(1) & 0xFF
-        # rvecs, tvecs, inliers = cv2.solvePnPRansac(objp, corners2, mtx, dist)
+        ## if different keys are pressed
         if key == ord("k"):
+            ##grab the information from the frame
             camera.grab_frame_information(frame, center.final_corners)
         if key == ord("c"):
+            ## calibrate using information from the frame
             camera.calibrate_camera(gray)
         if key == ord("d"):
+            ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
 
 
         if camera.draw_axis:
+            ##draw the cube
             #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
-            axis = np.float32([[0,0,0], [0,1,0], [1,1,0], [1,0,0],
-                   [0,0,1],[0,1,1],[1,1,1],[1,0,1] ])
+            axis_length = 1.5
+            axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
+                   [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
             rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
             imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, camera.mtx, camera.dist)
             draw_cube(frame, center.main_corner, imgpts)
         else:
+            ##otherwise, draw the lines to the dots
             for i, corner in enumerate(center.final_corners):
                 ## for each corner, color each one a different color
                 if i == 0:

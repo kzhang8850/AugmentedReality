@@ -5,12 +5,13 @@
 
 # import the necessary packages
 from collections import deque
+import numpy
 import numpy as np
 import argparse
 import imutils
 import cv2
 import math
-
+from stl import mesh
 class Contours(object):
     def __init__(self):
         """initializes variables"""
@@ -232,16 +233,19 @@ class Camera(object):
     def calibrate_camera(self, gray):
         self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
 
-def draw(frame, corner, imgpts):
+def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
+    imgpts = np.int32(imgpts).reshape(-1,2)
+    #cv2.drawContours(frame, [imgpts], -1, (255), -3)
+    #print imgpts
     cv2.line(frame, corner, tuple(imgpts[0].ravel()), (255,0,0), 5)
     cv2.line(frame, corner, tuple(imgpts[1].ravel()), (0,255,0), 5)
     cv2.line(frame, corner, tuple(imgpts[2].ravel()), (0,0,255), 5)
 
 def draw_cube(frame, corner, imgpts):
-    imgpts = np.int32(imgpts).reshape(-1,2)
 
+    imgpts = np.int32(imgpts).reshape(-1,2)
     # draw ground floor in green
     cv2.drawContours(frame, [imgpts[:4]],-1,(255),3)
 
@@ -250,7 +254,41 @@ def draw_cube(frame, corner, imgpts):
         cv2.line(frame, tuple(imgpts[i]), tuple(imgpts[j]),(255),3)
 
     # draw top layer in red color
+
     cv2.drawContours(frame, [imgpts[4:]],-1,(255),3)
+
+def draw_mesh(frame, imgpts):
+    # for triangle in mesh_grid:
+    #     print triangle
+    imgpts = np.int32(imgpts).reshape(-1,2)
+    for i in range(len(imgpts)):
+        if (i+1)%3 == 0:
+            print int(255*(i/float(len(imgpts))))
+            cv2.drawContours(frame, [imgpts[i-2:i+1]], -1, (int(255*(i/float(len(imgpts)))), 0, 0), -3)
+    #cv2.drawContours(frame, [imgpts], -1, (255), 3)
+def create_mesh_grid(mesh):
+    mesh_grid = []
+    for triangle in mesh:
+        mesh_grid.extend(triangle)
+    #print mesh_grid
+    scale = 25.4*2.25
+    scaled_grid = [x/scale for x in mesh_grid]
+    scaled_grid = np.float32(scaled_grid).reshape(-1,3)
+    #print scaled_grid
+    return scaled_grid
+    # for triangle in mesh:
+    #     points = []
+    #     for i, number in enumerate(triangle):
+    #         points.append(number)
+    #         if (i+1)%3 == 0:
+    #             points.append(number)
+    #             mesh_grid.append(points)
+    #             points = []
+    #     print triangle
+    #     imgpts = np.int32(triangle).reshape(-1,2)
+    #     mesh_grid.append(imgpts)
+    # print mesh_grid
+    # return mesh_grid
 
 def program():
     """runs the program"""
@@ -258,6 +296,7 @@ def program():
     contour = Contours()
     center = Centers()
     camera = Camera()
+    my_mesh = mesh.Mesh.from_file('Triangle_Cad.STL')
     ## define the lower and upper boundaries of the "blue"
     ## define the lower and uppoer boundaries of the "black"
     ## ball in the HSV color space, then initialize the
@@ -315,13 +354,18 @@ def program():
 
         if camera.draw_axis:
             ##draw the cube
+            mesh_grid = create_mesh_grid(my_mesh)
+            #print my_mesh
             #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
-            axis_length = 1.5
-            axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
-                   [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
+
+            #axis_length = 1.5
+            #axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
+            #       [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
+            #print axis
             rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            imgpts, jac = cv2.projectPoints(axis, rvecs, tvecs, camera.mtx, camera.dist)
-            draw_cube(frame, center.main_corner, imgpts)
+            imgpts, jac = cv2.projectPoints(mesh_grid, rvecs, tvecs, camera.mtx, camera.dist)
+            #draw_axis(frame, center.main_corner, imgpts)
+            draw_mesh(frame, imgpts)
         else:
             ##otherwise, draw the lines to the dots
             for i, corner in enumerate(center.final_corners):

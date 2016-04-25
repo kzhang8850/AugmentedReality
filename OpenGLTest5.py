@@ -195,7 +195,7 @@ def main():             # Initialize GLUT
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    glutFullScreen()
+    # glutFullScreen()
 
     initGL()                       # Our own OpenGL initialization
     glutMainLoop()                 # Enter the infinite event-processing loop

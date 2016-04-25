@@ -263,15 +263,16 @@ def draw_mesh(frame, imgpts):
     imgpts = np.int32(imgpts).reshape(-1,2)
     for i in range(len(imgpts)):
         if (i+1)%3 == 0:
-            print int(255*(i/float(len(imgpts))))
-            cv2.drawContours(frame, [imgpts[i-2:i+1]], -1, (int(255*(i/float(len(imgpts)))), 0, 0), -3)
+            #print int(255*(i/float(len(imgpts))))
+            cv2.drawContours(frame, [imgpts[i-2:i+1]], -1, (int(255*(i/float(len(imgpts)))), int(255*(i/float(len(imgpts)))), int(255*(i/float(len(imgpts))))), -3)
     #cv2.drawContours(frame, [imgpts], -1, (255), 3)
 def create_mesh_grid(mesh):
     mesh_grid = []
-    for triangle in mesh:
-        mesh_grid.extend(triangle)
-    #print mesh_grid
     scale = 25.4*2.25
+    #scaled_grid = [triangle/scale for sublist in mesh for triangle in sublist]
+    for triangle in mesh:
+       mesh_grid.extend(triangle)
+    #print mesh_grid
     scaled_grid = [x/scale for x in mesh_grid]
     scaled_grid = np.float32(scaled_grid).reshape(-1,3)
     #print scaled_grid
@@ -290,13 +291,14 @@ def create_mesh_grid(mesh):
     # print mesh_grid
     # return mesh_grid
 
-def program():
+def program(mesh_grid):
     """runs the program"""
     ## create objects for each class
     contour = Contours()
     center = Centers()
     camera = Camera()
-    my_mesh = mesh.Mesh.from_file('Triangle_Cad.STL')
+    cv2.waitKey(25)
+
     ## define the lower and upper boundaries of the "blue"
     ## define the lower and uppoer boundaries of the "black"
     ## ball in the HSV color space, then initialize the
@@ -354,7 +356,6 @@ def program():
 
         if camera.draw_axis:
             ##draw the cube
-            mesh_grid = create_mesh_grid(my_mesh)
             #print my_mesh
             #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
 
@@ -404,4 +405,6 @@ def program():
     cv2.destroyAllWindows();
 
 if __name__ == '__main__':
-    program()
+    my_mesh = mesh.Mesh.from_file('Test_Piece.STL')
+    mesh_grid = create_mesh_grid(my_mesh)
+    program(mesh_grid)

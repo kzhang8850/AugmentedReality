@@ -39,6 +39,10 @@ class Centers(object):
         self.main_corner_index = -1
         self.vectors = []
         self.final_corners = []
+        self.distances = []
+        self.threshold = 5
+        self.num_black_corners = 0
+        self.is_tracking = True
 
     def update_centers(self, contour_list, mask_black):
         """takes in a list of contours and a masked black frame to creates a tuple of (x,y) coordinates for the center of each contour"""
@@ -53,6 +57,7 @@ class Centers(object):
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
                     ## add the center to a list
                     self.corners.append(center)
+            self.num_black_corners = 0 
             for i, center in enumerate(self.corners):
                 ## if the center is within the window range,
                 if center[0] < 600 and center[1] < 450:
@@ -60,9 +65,14 @@ class Centers(object):
                     color = mask_black[center[1], center[0]]
                     ## if the color at the center is black
                     if color == 255:
+                        self.num_black_corners += 1
                         ## store that information
                         self.main_corner_index = i
                         self.main_corner = center
+            if self.num_black_corners == 1:
+                self.is_tracking = True
+            else:
+                self.is_tracking = False
 
     def update_vectors(self):
         """creates vectors (x,y) reference tuples from the main corner (black corner)"""
@@ -84,38 +94,56 @@ class Centers(object):
         self.final_corners.append(self.main_corner)
         corners = []
         ## for each corner, only add the corner if it isnt the main corner
-        for i, corner in enumerate(self.corners):
-            if not(self.main_corner[0] == corner[0] and self.main_corner[1] == corner[1]):
-                corners.append(corner)
-        ## save the fourth corner
-        corner_4 = return_point_4(self.main_corner, corners[0], corners[1], corners[2])
-        ## find the quadrant clockwise to the quadrant the corners are occupying
-        quadrant = return_closest_quadrant(self.main_corner, corners[0], corners[1], corners[2])
-        potential_points = []
-        ## for each corner (this finds potential points for corner_2)
-        for corner in corners:
-            ## if the corner is not corner 4,
-            if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
-                check_quadrant = quadrant + 1
-                if check_quadrant == 5:
-                    check_quadrant = 1
-                ## if the corner is within the quadrant after check quadrant,
-                if check_quadrant == return_quadrant((corner[0] - self.main_corner[0], corner[1] - self.main_corner[1])):
-                    ## add this to potential_points
-                    potential_points.append(corner)
-        corner_2 = (0,0)
-        corner_3 = (0,0)
-        if len(potential_points) > 0:
-            ## pass potential points into return_point_2
-            corner_2 = return_point_2(quadrant, self.main_corner, potential_points)
+        if len(self.corners) == 4:
+            for i, corner in enumerate(self.corners):
+                if not(self.main_corner[0] == corner[0] and self.main_corner[1] == corner[1]):
+                    corners.append(corner)
+            ## save the fourth corner
+            corner_4 = return_point_4(self.main_corner, corners[0], corners[1], corners[2])
+            ## find the quadrant clockwise to the quadrant the corners are occupying
+            quadrant = return_closest_quadrant(self.main_corner, corners[0], corners[1], corners[2])
+            potential_points = []
+            ## for each corner (this finds potential points for corner_2)
+            for corner in corners:
+                ## if the corner is not corner 4,
+                if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
+                    check_quadrant = quadrant + 1
+                    if check_quadrant == 5:
+                        check_quadrant = 1
+                    ## if the corner is within the quadrant after check quadrant,
+                    if check_quadrant == return_quadrant((corner[0] - self.main_corner[0], corner[1] - self.main_corner[1])):
+                        ## add this to potential_points
+                        potential_points.append(corner)
+            corner_2 = (0,0)
+            corner_3 = (0,0)
+            if len(potential_points) > 0:
+                ## pass potential points into return_point_2
+                corner_2 = return_point_2(quadrant, self.main_corner, potential_points)
 
-        for corner in corners:
-            if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
-                if not (corner[0] == corner_2[0] and corner[1] == corner_2[1]):
-                    corner_3 = corner
-        self.final_corners.append(corner_2)
-        self.final_corners.append(corner_3)
-        self.final_corners.append(corner_4)
+            for corner in corners:
+                if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
+                    if not (corner[0] == corner_2[0] and corner[1] == corner_2[1]):
+                        corner_3 = corner
+            self.final_corners.append(corner_2)
+            self.final_corners.append(corner_3)
+            self.final_corners.append(corner_4)
+    def distance_of_corners(self, final_corners):
+        """sets self.distances to have all the distances between each corner"""
+        self.distances = []
+        for i in range(len(final_corners)):
+            if i == 3:
+                self.distances.append(get_distance(final_corners[i], final_corners[0]))
+            else:
+                self.distances.append(get_distance(final_corners[i], final_corners[i+1]))
+    def bool_is_tracking(self):
+        self.distance_of_corners(self.final_corners)
+        self.distances.sort()
+        #print self.distances
+        #if len(self.distances) == :
+        test_value = (self.distances[3] + self.distances[2])/ self.distances[0]
+        #print test_value
+        if test_value > self.threshold:
+            self.is_tracking = False
 
 def return_point_2(quadrant, main_corner, potential_points):
     """checks the angle in order to find corner_2"""
@@ -197,8 +225,8 @@ def return_point_4(main_corner, point_1, point_2, point_3):
     else:
         return point_1
 
-def get_distance(point1, point2):
-    return math.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+def get_distance(point_1, point_2):
+    return math.sqrt((point_1[0] - point_2[0])**2 + (point_1[1] - point_2[1])**2)
 
 def get_angle(main_corner, point_1, point_2):
     c = get_distance(point_1, point_2)
@@ -208,6 +236,7 @@ def get_angle(main_corner, point_1, point_2):
 
 def is_positive(x):
     return (x >= 0)
+
 
 class Camera(object):
     def __init__(self):
@@ -268,7 +297,7 @@ def draw_mesh(frame, imgpts):
     #cv2.drawContours(frame, [imgpts], -1, (255), 3)
 def create_mesh_grid(mesh):
     mesh_grid = []
-    scale = 25.4*2.25
+    scale = 25.4*2.25*4
     #scaled_grid = [triangle/scale for sublist in mesh for triangle in sublist]
     for triangle in mesh:
        mesh_grid.extend(triangle)
@@ -303,7 +332,7 @@ def program(mesh_grid):
     ## define the lower and uppoer boundaries of the "black"
     ## ball in the HSV color space, then initialize the
     ## list of tracked points
-    blueLower = np.array([90,100,50])
+    blueLower = np.array([90,100,10])
     blueUpper = np.array([150,255,255])
 
     blackLower = np.array([0,0,0])
@@ -340,12 +369,13 @@ def program(mesh_grid):
         if len(center.corners) == 4:
             center.reorganize_centers()
         center.update_vectors()
-
+        center.bool_is_tracking()
         key = cv2.waitKey(1) & 0xFF
         ## if different keys are pressed
         if key == ord("k"):
             ##grab the information from the frame
-            camera.grab_frame_information(frame, center.final_corners)
+            if center.is_tracking:
+                camera.grab_frame_information(frame, center.final_corners)
         if key == ord("c"):
             ## calibrate using information from the frame
             camera.calibrate_camera(gray)
@@ -353,42 +383,42 @@ def program(mesh_grid):
             ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
 
+        if center.is_tracking:
+            if camera.draw_axis:
+                ##draw the cube
+                #print my_mesh
+                #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
 
-        if camera.draw_axis:
-            ##draw the cube
-            #print my_mesh
-            #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
-
-            #axis_length = 1.5
-            #axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
-            #       [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
-            #print axis
-            rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            imgpts, jac = cv2.projectPoints(mesh_grid, rvecs, tvecs, camera.mtx, camera.dist)
-            #draw_axis(frame, center.main_corner, imgpts)
-            draw_mesh(frame, imgpts)
-        else:
-            ##otherwise, draw the lines to the dots
-            for i, corner in enumerate(center.final_corners):
-                ## for each corner, color each one a different color
-                if i == 0:
-                    ##print 'green'
-                    cv2.circle(frame, corner, 20, (0,255,0), thickness=-1)
-                elif i == 1:
-                    ##print 'red'
-                    cv2.circle(frame, corner, 15, (0,0,255), thickness=-1)
-                elif i == 2:
-                    ##print 'yellow'
-                    cv2.circle(frame, corner, 10, (0,255,255), thickness=-1)
-                else:
-                    ##print 'white'
-                    cv2.circle(frame, corner, 5, (255,255,255), thickness=-1)
-                ##uses the vector to draw a line on the tracked square
-            for i, vector in enumerate(center.vectors):
-                reference_point_x = center.main_corner[0] + vector[0]
-                reference_point_y = center.main_corner[1] + vector[1]
-                points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
-                cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
+                #axis_length = 1.5
+                #axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
+                #       [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
+                #print axis
+                rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
+                imgpts, jac = cv2.projectPoints(mesh_grid, rvecs, tvecs, camera.mtx, camera.dist)
+                #draw_axis(frame, center.main_corner, imgpts)
+                draw_mesh(frame, imgpts)
+            else:
+                ##otherwise, draw the lines to the dots
+                for i, corner in enumerate(center.final_corners):
+                    ## for each corner, color each one a different color
+                    if i == 0:
+                        ##print 'green'
+                        cv2.circle(frame, corner, 20, (0,255,0), thickness=-1)
+                    elif i == 1:
+                        ##print 'red'
+                        cv2.circle(frame, corner, 15, (0,0,255), thickness=-1)
+                    elif i == 2:
+                        ##print 'yellow'
+                        cv2.circle(frame, corner, 10, (0,255,255), thickness=-1)
+                    else:
+                        ##print 'white'
+                        cv2.circle(frame, corner, 5, (255,255,255), thickness=-1)
+                    ##uses the vector to draw a line on the tracked square
+                for i, vector in enumerate(center.vectors):
+                    reference_point_x = center.main_corner[0] + vector[0]
+                    reference_point_y = center.main_corner[1] + vector[1]
+                    points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
+                    cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
 
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
@@ -405,6 +435,6 @@ def program(mesh_grid):
     cv2.destroyAllWindows();
 
 if __name__ == '__main__':
-    my_mesh = mesh.Mesh.from_file('Test_Piece.STL')
+    my_mesh = mesh.Mesh.from_file('VAWT.STL')
     mesh_grid = create_mesh_grid(my_mesh)
     program(mesh_grid)

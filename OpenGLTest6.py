@@ -10,20 +10,12 @@ height = 720
 
 global angle
 global position
+global width
 global capture
 angle = 30.0
 position = [0,0,0]
+cube_width = 2
 capture = None
-
-# What is this?
-def cv2array(im):     
-    h,w,c=im.shape
-    a = np.fromstring( 
-       im.tostring(), 
-       dtype=im.dtype, 
-       count=w*h*c) 
-    a.shape = (h,w,c) 
-    return a
 
 def initGL():
     glClearColor(0.0, 0.0, 0.0, 1.0) # Set background color to black and opaque
@@ -40,7 +32,6 @@ def initGL():
     glutIdleFunc(idle)
 
     glutTimerFunc(25, update, 0)
-
 
 
 def idle():
@@ -62,8 +53,7 @@ def idle():
 
 
 def display():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)  
-    print "draw" 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)   
 
     set2DTexMode()
 
@@ -84,7 +74,7 @@ def display():
     glTranslatef(0.0, 0.0, -10.0)  # Move right and into the screen
     glRotatef(angle, 1, 1, 1)
 
-    vertices = cube_vertices(position, 1)
+    vertices = cube_vertices(position, cube_width)
     drawCube(vertices)    
 
     glFlush()  
@@ -118,6 +108,12 @@ def set3DMode():
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
     glLoadIdentity();
+
+def drawCube2(vertices):
+
+    glBegin(GL_QUADS)
+
+
 
 def drawCube(vertices):
 
@@ -161,6 +157,7 @@ def cube_vertices(position, width):
 def update(dt):
     global angle
     global position
+    global width
 
     angle += 2.0
     if angle > 360.0:
@@ -173,7 +170,6 @@ def update(dt):
     glutTimerFunc(25, update, 0)
 
 def keyboard(key, x, y):
-    global anim
     if key == chr(27):
         sys.exit()
 
@@ -189,7 +185,7 @@ def main():             # Initialize GLUT
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    # glutFullScreen()
+    glutFullScreen()
 
     initGL()                       # Our own OpenGL initialization
     glutMainLoop()                 # Enter the infinite event-processing loop

@@ -12,6 +12,7 @@ import imutils
 import cv2
 import math
 from stl import mesh
+import glob
 class Contours(object):
     def __init__(self):
         """initializes variables"""
@@ -255,8 +256,8 @@ class Camera(object):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
         self.imgpoints.append(np.array(corners, dtype = np.float32))
-        print self.objp
-        print np.array(corners)
+        #print self.objp
+        #print np.array(corners)
         #cv2.putText(frame, "Hi", (100,100), 
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
     def calibrate_camera(self, gray):
@@ -297,7 +298,7 @@ def draw_mesh(frame, imgpts):
     #cv2.drawContours(frame, [imgpts], -1, (255), 3)
 def create_mesh_grid(mesh):
     mesh_grid = []
-    scale = 25.4*2.25*4
+    scale = 25.4*2.25
     #scaled_grid = [triangle/scale for sublist in mesh for triangle in sublist]
     for triangle in mesh:
        mesh_grid.extend(triangle)
@@ -337,9 +338,36 @@ def program(mesh_grid):
 
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
+    images = glob.glob('*.png')
+    for fname in images:
+        img = cv2.imread(fname)
+        hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        ## construct a mask for the color "blue", then remove any imperfections
+        mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)
+        mask_blue = cv2.erode(mask_blue, None, iterations=1)
+        mask_blue = cv2.dilate(mask_blue, None, iterations=1)
+        ## create black mask for tracking corner
+        mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
+        ## create edges in which to create contours
+        edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+        ##creates information about the contours
+        contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
+            cv2.CHAIN_APPROX_SIMPLE)
+
+        ##updates each of the elements in the classes
+        contour.update_contours(contour_information)
+        center.update_centers(contour.contour_list, mask_black)
+        center.reorganize_centers()
+        camera.grab_frame_information(img, center.final_corners)
 
     cap = cv2.VideoCapture(0)
     ## keep looping
+    ret, frame = cap.read()
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    camera.calibrate_camera(gray)
+
     while True:
         ## grab the current frame
         ret, frame = cap.read()
@@ -358,7 +386,6 @@ def program(mesh_grid):
         mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
         ## create edges in which to create contours
         edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
-        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
         ##creates information about the contours
         contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
@@ -373,13 +400,6 @@ def program(mesh_grid):
         center.bool_is_tracking()
         key = cv2.waitKey(1) & 0xFF
         ## if different keys are pressed
-        if key == ord("k"):
-            ##grab the information from the frame
-            if center.is_tracking:
-                camera.grab_frame_information(frame, center.final_corners)
-        if key == ord("c"):
-            ## calibrate using information from the frame
-            camera.calibrate_camera(gray)
         if key == ord("d"):
             ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
@@ -436,6 +456,6 @@ def program(mesh_grid):
     cv2.destroyAllWindows();
 
 if __name__ == '__main__':
-    my_mesh = mesh.Mesh.from_file('VAWT.STL')
+    my_mesh = mesh.Mesh.from_file('Test_Piece.STL')
     mesh_grid = create_mesh_grid(my_mesh)
     program(mesh_grid)

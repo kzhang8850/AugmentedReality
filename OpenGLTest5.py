@@ -4,13 +4,16 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import numpy as np
 import sys
+import pdb
 
-width = 1280
-height = 720
+
+width = 848 
+height = 480
 
 global angle
 global position
 global capture
+
 angle = 30.0
 position = [0,0,0]
 capture = None
@@ -19,14 +22,15 @@ capture = None
 def cv2array(im):     
     h,w,c=im.shape
     a = np.fromstring( 
-       im.tostring(), 
-       dtype=im.dtype, 
-       count=w*h*c) 
+        im.tostring(), 
+        dtype=im.dtype, 
+        count=w*h*c) 
     a.shape = (h,w,c) 
     return a
 
 def initGL():
     glClearColor(0.0, 0.0, 0.0, 1.0) # Set background color to black and opaque
+
 
     glEnable(GL_TEXTURE_2D)
     glClearDepth(1.0)                   # Set background depth to farthest
@@ -45,14 +49,16 @@ def initGL():
 
 def idle():
     #capture next frame
-
+    # print "idlings"
     global capture
     _,image = capture.read()
 
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     image = cv2.flip(image,0)
+    image = cv2.flip(image,1)
     #you must convert the image to array for glTexImage2D to work
     #maybe there is a faster way that I don't know about yet...
+
 
     # Create Texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image)
@@ -84,7 +90,7 @@ def display():
     glTranslatef(0.0, 0.0, -10.0)  # Move right and into the screen
     glRotatef(angle, 1, 1, 1)
 
-    vertices = cube_vertices(position, 1)
+    vertices = cube_vertices(position, 5)
     drawCube(vertices)    
 
     glFlush()  
@@ -178,6 +184,7 @@ def keyboard(key, x, y):
         sys.exit()
 
 def main():             # Initialize GLUT
+
     global capture
     #start openCV capturefromCAM
     capture = cv2.VideoCapture(0)

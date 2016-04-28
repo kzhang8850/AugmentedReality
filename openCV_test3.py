@@ -4,6 +4,9 @@
 ##program tracks blue squares and creates vectors
 
 # import the necessary packages
+
+#sudo pip install imutils
+#sudo apt-get install Enum34
 from collections import deque
 import numpy
 import numpy as np
@@ -13,6 +16,8 @@ import cv2
 import math
 from stl import mesh
 import glob
+
+
 class Contours(object):
     def __init__(self):
         """initializes variables"""

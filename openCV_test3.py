@@ -250,8 +250,9 @@ class Camera(object):
         self.mtx = None
         self.dist = None
         self.rvecs = None
-        self.tvex = None
+        self.tvecs = None
         self.draw_axis = False
+        self.view_matrix = False
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -262,8 +263,9 @@ class Camera(object):
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
     def calibrate_camera(self, gray):
         self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
-    def return_view_matrix(self):
-        rtmx = cv2.Rodrigues(self.rvecs)[0]
+    def return_view_matrix(self, rvecs, tvecs):
+        rmtx = cv2.Rodrigues(rvecs)[0]
+
         view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
                             [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
                             [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
@@ -275,7 +277,7 @@ class Camera(object):
         view_matrix = view_matrix * inverse_matrix
  
         view_matrix = np.transpose(view_matrix)
-        return return_view_matrix
+        return view_matrix
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -416,9 +418,15 @@ def program(mesh_grid):
         if key == ord("d"):
             ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
+        if key == ord("k"):
+            camera.view_matrix = not camera.view_matrix
         if center.is_tracking:
+            if camera.view_matrix:
+                rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
+                view_matrix = camera.return_view_matrix(rvecs, tvecs)
+                print view_matrix
+
             if camera.draw_axis:
-                view_matrix = camera.return_view_matrix
                 ##draw the cube
                 #print my_mesh
                 #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)

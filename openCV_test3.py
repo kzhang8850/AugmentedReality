@@ -262,7 +262,20 @@ class Camera(object):
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
     def calibrate_camera(self, gray):
         self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
-
+    def return_view_matrix(self):
+        rtmx = cv2.Rodrigues(self.rvecs)[0]
+        view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
+                            [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
+                            [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
+                            [0.0       ,0.0       ,0.0       ,1.0    ]])
+        inverse_matrix = np.array([[ 1.0, 1.0, 1.0, 1.0],
+                                   [-1.0,-1.0,-1.0,-1.0],
+                                   [-1.0,-1.0,-1.0,-1.0],
+                                   [ 1.0, 1.0, 1.0, 1.0]])
+        view_matrix = view_matrix * inverse_matrix
+ 
+        view_matrix = np.transpose(view_matrix)
+        return return_view_matrix
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -403,9 +416,9 @@ def program(mesh_grid):
         if key == ord("d"):
             ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
-
         if center.is_tracking:
             if camera.draw_axis:
+                view_matrix = camera.return_view_matrix
                 ##draw the cube
                 #print my_mesh
                 #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
@@ -440,7 +453,6 @@ def program(mesh_grid):
                     reference_point_y = center.main_corner[1] + vector[1]
                     points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
                     cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
-
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
         cv2.imshow("MaskBlack", mask_black)

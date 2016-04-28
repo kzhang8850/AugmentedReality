@@ -62,12 +62,15 @@ class loader:
     def draw(self):
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
+            print tri.points[].x
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
             glVertex3f(tri.points[2].x,tri.points[2].y,tri.points[2].z)
         glEnd()
-  
+   
+        sys.exit()
+
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -76,14 +79,13 @@ class loader:
         type=h[0:5]
         fp.close()
 
-        # if type=='solid':
-        #     print "reading text file"+str(filename)
-        #     self.load_text_stl(filename)
-        # else:
-        #     print "reading binary stl file "+str(filename,)
-        #     self.load_binary_stl(filename)
-        print "reading binary stl file "+str(filename,)
-        self.load_binary_stl(filename)
+        if type=='solid':
+            print "reading text file"+str(filename)
+            self.load_text_stl(filename)
+        else:
+            print "reading binary stl file "+str(filename,)
+            self.load_binary_stl(filename)
+
   
     #read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
@@ -156,7 +158,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
+        self.model1.load_stl(os.path.abspath('')+'/right.STL')
         self.init_shading()
 
 
@@ -175,17 +177,6 @@ class draw_scene:
         glEnable(GL_LIGHT0)   
         glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
         glMatrixMode(GL_MODELVIEW)
-      
-    def resize(self,(width, height)):
-        if height==0:
-            height=1
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45, 1.0*width/height, 0.1, 500.0)
-        gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
 
     def init(self):
         glShadeModel(GL_SMOOTH)
@@ -210,8 +201,9 @@ class draw_scene:
         
         glLoadIdentity()
       
-        glTranslatef(0.0, -26.0, -250.0)
-        glRotatef(angle, 1, 1, 1)
+        glTranslatef(0.0, -25.0, -250.0)
+        glRotatef(angle, 1, 0, 0)
+        # glScale(.5, .5, .5)
         self.model1.draw()
 
 
@@ -292,6 +284,10 @@ def idle():
 def set2DTexMode():
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
+    glDisable(GL_COLOR_MATERIAL)
+    glDisable(GL_LIGHTING)
+    glDisable(GL_LIGHT0)   
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
@@ -307,11 +303,15 @@ def set2DTexMode():
 def set3DMode():
     glDepthMask(GL_TRUE)
     glEnable(GL_DEPTH_TEST)
+    glEnable(GL_COLOR_MATERIAL)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0) 
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     # glViewport(0,0, width, height)
     gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0);
+    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
 
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
@@ -331,7 +331,7 @@ def main():
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    # glutFullScreen()
+    glutFullScreen()
 
     global scene
     global angle
@@ -341,7 +341,7 @@ def main():
     glutMainLoop()                 # Enter the infinite event-processing loop
 
 if __name__ == '__main__':
-    width = 640
-    height = 480
+    width = 1280
+    height = 720
 
     main()

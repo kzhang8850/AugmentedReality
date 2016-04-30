@@ -62,13 +62,12 @@ class loader:
     def draw(self):
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
-          
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
             glVertex3f(tri.points[2].x,tri.points[2].y,tri.points[2].z)
         glEnd()
-   
+
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -339,7 +338,7 @@ def main():
     glutMainLoop()                 # Enter the infinite event-processing loop
 
 if __name__ == '__main__':
-    width = 1280
-    height = 720
+    width = 848
+    height = 480
 
     main()

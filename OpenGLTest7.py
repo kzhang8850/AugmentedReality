@@ -62,15 +62,13 @@ class loader:
     def draw(self):
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
-            print tri.points[].x
+          
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
             glVertex3f(tri.points[2].x,tri.points[2].y,tri.points[2].z)
         glEnd()
    
-        sys.exit()
-
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -208,12 +206,12 @@ class draw_scene:
 
 
 def initGL():
+
     glClearColor(0.0, 0.0, 0.0, 1.0) # Set background color to black and opaque  
 
     glutDisplayFunc(display)       
     glutKeyboardFunc(keyboard)
     glutIdleFunc(idle)
-
     glutTimerFunc(25, update, 0)
 
 
@@ -268,7 +266,7 @@ def idle():
 
     global capture
     _,image = capture.read()
-
+    #print test
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     image = cv2.flip(image,0)
     image = cv2.flip(image,1)

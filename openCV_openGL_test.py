@@ -266,13 +266,9 @@ class Camera(object):
                                        [-1.0,-1.0,-1.0,-1.0],
                                        [-1.0,-1.0,-1.0,-1.0],
                                        [ 1.0, 1.0, 1.0, 1.0]])
-        self.proj = None
         self.near = 5
-        self.far = 10000
-        #self.inverse_matrix = np.array([[ 1.0, 0, 0, 0],
-        #                               [0,-1.0,0,0],
-        #                               [0,0,-1.0,0],
-        #                               [ 0, 0, 0, 1.0]])
+        self.far = 1000
+
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -286,20 +282,14 @@ class Camera(object):
     def calculate_view_matrix(self, rvecs, tvecs):
         width = 848
         height = 480
-        self.proj = np.array([[2*self.mtx[0][0]/width, 0, -1+2*self.mtx[0][2]/width, 0],
-                                [0, 2*self.mtx[1][1]/height, -1+ 2*self.mtx[1][2]/height, 0],
-                                [0.0              , 0.0             , -(self.near+self.far)/(self.far-self.near), -2*(self.near*self.far)/(self.far-self.near)],
-                                [0.0              , 0.0             , -1.0               , 0.0                ]])
         rmtx = cv2.Rodrigues(rvecs)[0]
-        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
-                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
+        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]-.7],
+                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]+.7],
                                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
                                     [0.0       ,0.0       ,0.0       ,1.0    ]])
 
         self.model_view = self.model_view*self.inverse_matrix
- 
         self.view_matrix = np.transpose(self.model_view)
-        #print self.view_matrix
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -537,28 +527,16 @@ class draw_scene:
         width = 848
         height = 480
         #glLoadIdentity()
-        gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
         #glRotatef(angle, 1, 0, 0)
         if camera.view_matrix_bool:
             #print camera.view_matrix
         #lBindTexture(GL_TEXTURE_2D, self.model1)
         #glPushMatrix()
-            glPushMatrix()
-            glLoadMatrixd(camera.view_matrix)
 
-            #glMatrixMode(GL_MODELVIEW);
-            #glLoadIdentity();
-            #glLoadMatrixd(camera.view_matrix)
-            #glPushMatrix()  
-            """
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            glMultMatrixd(camera.proj);
-            """
-            #glTranslatef(20.0, 0, -150.0)
-        # glScale(.5, .5, .5)
+            glLoadMatrixd(camera.view_matrix)
+            glScale(.03, .03, .03)
+
             self.model1.draw()
-            glPopMatrix()
         #glPopMatrix()
 
 
@@ -575,7 +553,6 @@ def initGL():
 def display():
 
     global scene
-
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
     set2DTexMode()
@@ -592,8 +569,8 @@ def display():
     glVertex2f(0.0, height)
     glEnd()
 
+
     set3DMode()
-    
     scene.draw()
 
     glFlush()
@@ -747,6 +724,7 @@ def set2DTexMode():
     glLoadIdentity()
 
 def set3DMode():
+    global camera
     glDepthMask(GL_TRUE)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
@@ -755,13 +733,7 @@ def set3DMode():
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    # glViewport(0,0, width, height)
     gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
-    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
-    
-    #glPushMatrix()
-    #glLoadMatrixd(camera.view_matrix)
-
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
     glLoadIdentity();

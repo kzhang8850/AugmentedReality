@@ -379,7 +379,10 @@ def program(mesh_grid):
         ## resize the frame, blur it, and convert it to the HSV
         frame = imutils.resize(frame, width=600)
         frame = cv2.flip(frame,1)
-        cv2.imshow("Original_Frame", frame)
+        cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+        cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        cv2.imshow("test",img)
+        cv2.imshow("test", frame)
         ## color space
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         ## construct a mask for the color "blue", then remove any imperfections

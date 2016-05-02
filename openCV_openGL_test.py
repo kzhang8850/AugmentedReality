@@ -14,6 +14,7 @@ import imutils
 import math
 from stl import mesh
 import glob
+import time
 
 #################################
 ####OPEN CV STUFF################
@@ -413,30 +414,6 @@ class loader:
         self.load_binary_stl(filename)
 
   
-    #read text stl match keywords to grab the points to build the model
-    def load_text_stl(self,filename):
-        fp=open(filename,'r')
-
-        for line in fp.readlines():
-            words=line.split()
-            if len(words)>0:
-                if words[0]=='solid':
-                    self.name=words[1]
-
-                if words[0]=='facet':
-                    center=[0.0,0.0,0.0]
-                    triangle=[]
-                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
-                  
-                if words[0]=='vertex':
-                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
-                  
-                  
-                if words[0]=='endloop':
-                    #make sure we got the correct number of values before storing
-                    if len(triangle)==3:
-                        self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
-        fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
     #we use the struct library to read in and convert binary data into a format we can use
@@ -527,9 +504,7 @@ class draw_scene:
         width = 848
         height = 480
         #glLoadIdentity()
-        #glRotatef(angle, 1, 0, 0)
         if camera.view_matrix_bool:
-            #print camera.view_matrix
         #lBindTexture(GL_TEXTURE_2D, self.model1)
         #glPushMatrix()
 
@@ -606,6 +581,7 @@ def idle():
     global center
     global camera
     global contour
+    global camcalib
 
     blueLower = np.array([90,100,10])
     blueUpper = np.array([150,255,255])
@@ -613,7 +589,7 @@ def idle():
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
 
-    _,image = capture.read()
+    ret2 ,image = capture.read()
 
     #you must convert the image to array for glTexImage2D to work
     #maybe there is a faster way that I don't know about yet...
@@ -625,6 +601,17 @@ def idle():
     #frame = imutils.resize(frame, width=600)
     #frame = cv2.flip(frame,1)
     ## color space
+
+
+    if camcalib:
+        gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        camera.calibrate_camera(gray)
+        camcalib = False
+        return
+    # print capture
+    # print image
+
+ 
     
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     #image = imutils.resize(image, width=600)
@@ -745,6 +732,7 @@ def main():
     global camera
     global center
     global capture
+    global camcalib
     #start openCV capturefromCAM
     capture = cv2.VideoCapture(0)
     contour = Contours()
@@ -779,9 +767,11 @@ def main():
         center.update_centers(contour.contour_list, mask_black)
         center.reorganize_centers()
         camera.grab_frame_information(img, center.final_corners)
-    ret, frame = capture.read()
-    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    camera.calibrate_camera(gray)
+
+    # ret, frame = capture.read()
+
+    camcalib = True
+
 
 
     # print capture
@@ -792,7 +782,7 @@ def main():
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    glutFullScreen()
+    # glutFullScreen()
 
     global scene
     global angle

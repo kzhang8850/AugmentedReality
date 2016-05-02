@@ -14,6 +14,7 @@ import imutils
 import math
 from stl import mesh
 import glob
+import time
 
 #################################
 ####OPEN CV STUFF################
@@ -266,13 +267,9 @@ class Camera(object):
                                        [-1.0,-1.0,-1.0,-1.0],
                                        [-1.0,-1.0,-1.0,-1.0],
                                        [ 1.0, 1.0, 1.0, 1.0]])
-        self.proj = None
         self.near = 5
-        self.far = 10000
-        #self.inverse_matrix = np.array([[ 1.0, 0, 0, 0],
-        #                               [0,-1.0,0,0],
-        #                               [0,0,-1.0,0],
-        #                               [ 0, 0, 0, 1.0]])
+        self.far = 1000
+
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -286,20 +283,14 @@ class Camera(object):
     def calculate_view_matrix(self, rvecs, tvecs):
         width = 848
         height = 480
-        self.proj = np.array([[2*self.mtx[0][0]/width, 0, -1+2*self.mtx[0][2]/width, 0],
-                                [0, 2*self.mtx[1][1]/height, -1+ 2*self.mtx[1][2]/height, 0],
-                                [0.0              , 0.0             , -(self.near+self.far)/(self.far-self.near), -2*(self.near*self.far)/(self.far-self.near)],
-                                [0.0              , 0.0             , -1.0               , 0.0                ]])
         rmtx = cv2.Rodrigues(rvecs)[0]
-        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
-                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
+        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]-.7],
+                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]+.7],
                                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
                                     [0.0       ,0.0       ,0.0       ,1.0    ]])
 
         self.model_view = self.model_view*self.inverse_matrix
- 
         self.view_matrix = np.transpose(self.model_view)
-        #print self.view_matrix
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -423,30 +414,6 @@ class loader:
         self.load_binary_stl(filename)
 
   
-    #read text stl match keywords to grab the points to build the model
-    def load_text_stl(self,filename):
-        fp=open(filename,'r')
-
-        for line in fp.readlines():
-            words=line.split()
-            if len(words)>0:
-                if words[0]=='solid':
-                    self.name=words[1]
-
-                if words[0]=='facet':
-                    center=[0.0,0.0,0.0]
-                    triangle=[]
-                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
-                  
-                if words[0]=='vertex':
-                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
-                  
-                  
-                if words[0]=='endloop':
-                    #make sure we got the correct number of values before storing
-                    if len(triangle)==3:
-                        self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
-        fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
     #we use the struct library to read in and convert binary data into a format we can use
@@ -537,28 +504,14 @@ class draw_scene:
         width = 848
         height = 480
         #glLoadIdentity()
-        gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
-        #glRotatef(angle, 1, 0, 0)
         if camera.view_matrix_bool:
-            #print camera.view_matrix
         #lBindTexture(GL_TEXTURE_2D, self.model1)
         #glPushMatrix()
-            glPushMatrix()
-            glLoadMatrixd(camera.view_matrix)
 
-            #glMatrixMode(GL_MODELVIEW);
-            #glLoadIdentity();
-            #glLoadMatrixd(camera.view_matrix)
-            #glPushMatrix()  
-            """
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            glMultMatrixd(camera.proj);
-            """
-            #glTranslatef(20.0, 0, -150.0)
-        # glScale(.5, .5, .5)
+            glLoadMatrixd(camera.view_matrix)
+            glScale(.03, .03, .03)
+
             self.model1.draw()
-            glPopMatrix()
         #glPopMatrix()
 
 
@@ -575,7 +528,6 @@ def initGL():
 def display():
 
     global scene
-
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
     set2DTexMode()
@@ -592,8 +544,8 @@ def display():
     glVertex2f(0.0, height)
     glEnd()
 
+
     set3DMode()
-    
     scene.draw()
 
     glFlush()
@@ -629,6 +581,7 @@ def idle():
     global center
     global camera
     global contour
+    global camcalib
 
     blueLower = np.array([90,100,10])
     blueUpper = np.array([150,255,255])
@@ -636,7 +589,7 @@ def idle():
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
 
-    _,image = capture.read()
+    ret2 ,image = capture.read()
 
     #you must convert the image to array for glTexImage2D to work
     #maybe there is a faster way that I don't know about yet...
@@ -648,6 +601,17 @@ def idle():
     #frame = imutils.resize(frame, width=600)
     #frame = cv2.flip(frame,1)
     ## color space
+
+
+    if camcalib:
+        gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        camera.calibrate_camera(gray)
+        camcalib = False
+        return
+    # print capture
+    # print image
+
+ 
     
     image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
     #image = imutils.resize(image, width=600)
@@ -747,6 +711,7 @@ def set2DTexMode():
     glLoadIdentity()
 
 def set3DMode():
+    global camera
     glDepthMask(GL_TRUE)
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_COLOR_MATERIAL)
@@ -755,13 +720,7 @@ def set3DMode():
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    # glViewport(0,0, width, height)
     gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
-    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
-    
-    #glPushMatrix()
-    #glLoadMatrixd(camera.view_matrix)
-
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
     glLoadIdentity();
@@ -773,6 +732,7 @@ def main():
     global camera
     global center
     global capture
+    global camcalib
     #start openCV capturefromCAM
     capture = cv2.VideoCapture(0)
     contour = Contours()
@@ -807,9 +767,11 @@ def main():
         center.update_centers(contour.contour_list, mask_black)
         center.reorganize_centers()
         camera.grab_frame_information(img, center.final_corners)
-    ret, frame = capture.read()
-    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    camera.calibrate_camera(gray)
+
+    # ret, frame = capture.read()
+
+    camcalib = True
+
 
 
     # print capture
@@ -820,7 +782,7 @@ def main():
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    glutFullScreen()
+    # glutFullScreen()
 
     global scene
     global angle

@@ -472,6 +472,7 @@ def program(mesh_grid):
                     reference_point_y = center.main_corner[1] + vector[1]
                     points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
                     cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
+            print center.main_corner
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
         cv2.imshow("MaskBlack", mask_black)

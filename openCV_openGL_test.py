@@ -1,33 +1,23 @@
-##Author: Cedric Kim, Kevin Guo
-##Software design, spring 2016
-##Augmented Reality
-##program tracks blue squares and creates vectors
-
-#import the necessary packages
-
-#sudo pip install imutils
-#sudo apt-get install Enum34
-from collections import deque
-import numpy
-import numpy as np
-import argparse
-import imutils
+import os
+import struct
 import cv2
-import math
-from stl import mesh
-import glob
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-
-import os
-import struct
-
+import numpy as np
 import sys
+import cv2
+from collections import deque
+import argparse
+import imutils
+import math
+from stl import mesh
+import glob
 
-global capture
-capture = None
+#################################
+####OPEN CV STUFF################
+#################################
 
 
 class Contours(object):
@@ -78,10 +68,10 @@ class Centers(object):
             self.num_black_corners = 0 
             for i, center in enumerate(self.corners):
                 ## if the center is within the window range,
-                # if center[0] < 600 and center[1] < 450:
+                #if center[0] < 600 and center[1] < 450:
                     ## grab the color at the center of the black mask,
                 color = mask_black[center[1], center[0]]
-                    ## if the color at the center is black
+                ## if the color at the center is black
                 if color == 255:
                     self.num_black_corners += 1
                     ## store that information
@@ -162,8 +152,6 @@ class Centers(object):
         #print test_value
         if test_value > self.threshold:
             self.is_tracking = False
-
-
 
 def return_point_2(quadrant, main_corner, potential_points):
     """checks the angle in order to find corner_2"""
@@ -271,7 +259,20 @@ class Camera(object):
         self.rvecs = None
         self.tvecs = None
         self.draw_axis = False
-        self.view_matrix = False
+        self.view_matrix_bool = False
+        self.view_matrix = None
+        self.model_view = None
+        self.inverse_matrix = np.array([[ 1.0, 1.0, 1.0, 1.0],
+                                       [-1.0,-1.0,-1.0,-1.0],
+                                       [-1.0,-1.0,-1.0,-1.0],
+                                       [ 1.0, 1.0, 1.0, 1.0]])
+        self.proj = None
+        self.near = 5
+        self.far = 10000
+        #self.inverse_matrix = np.array([[ 1.0, 0, 0, 0],
+        #                               [0,-1.0,0,0],
+        #                               [0,0,-1.0,0],
+        #                               [ 0, 0, 0, 1.0]])
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -282,27 +283,23 @@ class Camera(object):
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
     def calibrate_camera(self, gray):
         self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
-    def return_view_matrix(self, rvecs, tvecs):
+    def calculate_view_matrix(self, rvecs, tvecs):
+        width = 848
+        height = 480
+        self.proj = np.array([[2*self.mtx[0][0]/width, 0, -1+2*self.mtx[0][2]/width, 0],
+                                [0, 2*self.mtx[1][1]/height, -1+ 2*self.mtx[1][2]/height, 0],
+                                [0.0              , 0.0             , -(self.near+self.far)/(self.far-self.near), -2*(self.near*self.far)/(self.far-self.near)],
+                                [0.0              , 0.0             , -1.0               , 0.0                ]])
         rmtx = cv2.Rodrigues(rvecs)[0]
-        print rmtx
-        view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],-tvecs[0]],
-                            [rmtx[1][0],rmtx[1][1],rmtx[1][2],-tvecs[1]],
-                            [rmtx[2][0],rmtx[2][1],rmtx[2][2],-tvecs[2]],
-                            [0.0       ,0.0       ,0.0       ,1.0    ]])
+        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
+                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
+                                    [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
+                                    [0.0       ,0.0       ,0.0       ,1.0    ]])
 
-
-        # view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],0],
-        #                     [rmtx[1][0],rmtx[1][1],rmtx[1][2],0],
-        #                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],0],
-        #                     [tvecs[0],tvecs[1],tvecs[2],1.0]])
-        inverse_matrix = np.array([[ 1.0, 1.0, 1.0, 1.0],
-                                   [-1.0,-1.0,-1.0,-1.0],
-                                   [-1.0,-1.0,-1.0,-1.0],
-                                   [ 1.0, 1.0, 1.0, 1.0]])
-        # view_matrix = view_matrix * inverse_matrix
+        self.model_view = self.model_view*self.inverse_matrix
  
-        view_matrix = np.transpose(view_matrix)
-        return view_matrix
+        self.view_matrix = np.transpose(self.model_view)
+        #print self.view_matrix
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -347,19 +344,13 @@ def create_mesh_grid(mesh):
     scaled_grid = np.float32(scaled_grid).reshape(-1,3)
     #print scaled_grid
     return scaled_grid
-    # for triangle in mesh:
-    #     points = []
-    #     for i, number in enumerate(triangle):
-    #         points.append(number)
-    #         if (i+1)%3 == 0:
-    #             points.append(number)
-    #             mesh_grid.append(points)
-    #             points = []
-    #     print triangle
-    #     imgpts = np.int32(triangle).reshape(-1,2)
-    #     mesh_grid.append(imgpts)
-    # print mesh_grid
-    # return mesh_grid
+
+
+
+#################################
+####OPEN GL STUFF################
+#################################
+
 
 #class for a 3d point
 class createpoint:
@@ -427,14 +418,35 @@ class loader:
         type=h[0:5]
         fp.close()
 
-        # if type=='solid':
-        #     print "reading text file"+str(filename)
-        #     self.load_text_stl(filename)
-        # else:
-        #     print "reading binary stl file "+str(filename,)
-        #     self.load_binary_stl(filename)
+        
         print "reading binary stl file "+str(filename,)
         self.load_binary_stl(filename)
+
+  
+    #read text stl match keywords to grab the points to build the model
+    def load_text_stl(self,filename):
+        fp=open(filename,'r')
+
+        for line in fp.readlines():
+            words=line.split()
+            if len(words)>0:
+                if words[0]=='solid':
+                    self.name=words[1]
+
+                if words[0]=='facet':
+                    center=[0.0,0.0,0.0]
+                    triangle=[]
+                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
+                  
+                if words[0]=='vertex':
+                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
+                  
+                  
+                if words[0]=='endloop':
+                    #make sure we got the correct number of values before storing
+                    if len(triangle)==3:
+                        self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
+        fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
     #we use the struct library to read in and convert binary data into a format we can use
@@ -482,7 +494,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
+        self.model1.load_stl(os.path.abspath('')+'/Triangle_Cad.STL')
         self.init_shading()
 
 
@@ -520,76 +532,49 @@ class draw_scene:
         glMatrixMode(GL_MODELVIEW)
 
     def draw(self):
+        global angle
+        global camera
+        width = 848
+        height = 480
+        #glLoadIdentity()
+        gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
+        #glRotatef(angle, 1, 0, 0)
+        if camera.view_matrix_bool:
+            #print camera.view_matrix
+        #lBindTexture(GL_TEXTURE_2D, self.model1)
+        #glPushMatrix()
+            glPushMatrix()
+            glLoadMatrixd(camera.view_matrix)
 
-        
-        # glLoadIdentity()
-      
-        glTranslatef(0, 100.0, 100.0)
-        glScale(.3, .3, .3)
-        self.model1.draw()
+            #glMatrixMode(GL_MODELVIEW);
+            #glLoadIdentity();
+            #glLoadMatrixd(camera.view_matrix)
+            #glPushMatrix()  
+            """
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glMultMatrixd(camera.proj);
+            """
+            #glTranslatef(20.0, 0, -150.0)
+        # glScale(.5, .5, .5)
+            self.model1.draw()
+            glPopMatrix()
+        #glPopMatrix()
+
 
 def initGL():
-    global contour
-    global center
-    global camera 
-    global capture
-    global ret
-    global frame
-
-    contour = Contours()
-    center = Centers()
-    camera = Camera()
-    # cv2.waitKey(25)
-
-    blueLower = np.array([90,100,10])
-    blueUpper = np.array([150,255,255])
-    blackLower = np.array([0,0,0])
-    blackUpper = np.array([180, 255, 150])
-
-    images = glob.glob('*.png')
-    for fname in images:
-        img = cv2.imread(fname)
-        hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        ## construct a mask for the color "blue", then remove any imperfections
-        mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)
-        mask_blue = cv2.erode(mask_blue, None, iterations=1)
-        mask_blue = cv2.dilate(mask_blue, None, iterations=1)
-        ## create black mask for tracking corner
-        mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
-        ## create edges in which to create contours
-        # edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
-        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-
-        ##creates information about the contours
-        contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
-            cv2.CHAIN_APPROX_SIMPLE)
-
-        ##updates each of the elements in the classes
-        contour.update_contours(contour_information)
-        center.update_centers(contour.contour_list, mask_black)
-        center.reorganize_centers()
-        camera.grab_frame_information(img, center.final_corners)
-
-    # capture = cv2.VideoCapture(0)
-    ## keep looping
-    ret, frame = capture.read()
-    # gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-    camera.calibrate_camera(gray)
-
     glClearColor(0.0, 0.0, 0.0, 1.0) # Set background color to black and opaque  
 
     glutDisplayFunc(display)       
     glutKeyboardFunc(keyboard)
     glutIdleFunc(idle)
 
-    glutTimerFunc(25, update, 0)
+    glutTimerFunc(25, update, 0)    
 
 
 def display():
 
     global scene
-    global view_matrix
-    global camera
 
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 
@@ -608,26 +593,22 @@ def display():
     glEnd()
 
     set3DMode()
-
-    glPushMatrix()
-
-    if(camera.view_matrix):
-        # print'a'
-        glLoadMatrixd(view_matrix)
-        scene.draw()
-
-    glPopMatrix()    
+    
+    scene.draw()
 
     glFlush()
     glutSwapBuffers()
 
 
 def keyboard(key, x, y):
+    global camera
     if key == chr(27):
         sys.exit()
+    if key == chr(100):
+        ## set boolean to draw axises
+        camera.draw_axis = not camera.draw_axis
     if key == chr(107):
-        camera.view_matrix = not camera.view_matrix
-
+        camera.view_matrix_bool = not camera.view_matrix_bool
 def update(dt):
     global angle
     global position
@@ -644,29 +625,34 @@ def update(dt):
 
 def idle():
     #capture next frame
-    global camera
     global capture
-    global ret
-    global frame
-    global contour
     global center
-    global view_matrix
+    global camera
+    global contour
 
-    _,image = capture.read()
-    # ## grab the current frame
-    # ret, frame = capture.read()
-
-    ## resize the frame, blur it, and convert it to the HSV
-    frame = imutils.resize(image, width=640)
-    # frame = cv2.flip(frame,1)
-    # cv2.imshow("Original_Frame", frame)
-    ## color space
     blueLower = np.array([90,100,10])
     blueUpper = np.array([150,255,255])
+
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
 
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    _,image = capture.read()
+
+    #you must convert the image to array for glTexImage2D to work
+    #maybe there is a faster way that I don't know about yet...
+
+    # Create Texture
+    ## grab the current frame
+    
+    ## resize the frame, blur it, and convert it to the HSV
+    #frame = imutils.resize(frame, width=600)
+    #frame = cv2.flip(frame,1)
+    ## color space
+    
+    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+    #image = imutils.resize(image, width=600)
+    image = cv2.flip(image,1)
+    hsv_frame = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     ## construct a mask for the color "blue", then remove any imperfections
     mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)
     mask_blue = cv2.erode(mask_blue, None, iterations=1)
@@ -674,9 +660,9 @@ def idle():
     ## create black mask for tracking corner
     mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
     ## create edges in which to create contours
-    # edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
-
-    ##creates information about the contours`
+    edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
+    gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+    ##creates information about the contours
     contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
         cv2.CHAIN_APPROX_SIMPLE)
 
@@ -687,21 +673,12 @@ def idle():
         center.reorganize_centers()
     center.update_vectors()
     center.bool_is_tracking()
-    key = cv2.waitKey(1) & 0xFF
     ## if different keys are pressed
-    if key == ord("d"):
-        ## set boolean to draw axises
-        camera.draw_axis = not camera.draw_axis
     if center.is_tracking:
-        if camera.view_matrix:
+        if camera.view_matrix_bool:
             rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            # print camera.objp
-            # cv2.polylines(image, np.int32([center.final_corners]), True, (0,255,0), 3)
-            view_matrix = camera.return_view_matrix(rvecs, tvecs)
-            # print view_matrix
-        # print'a'
-
-        # if camera.draw_axis:
+            camera.calculate_view_matrix(rvecs, tvecs)
+        if camera.draw_axis:
             ##draw the cube
             #print my_mesh
             #axis = np.float32([[1,0,0], [0,1,0], [0,0,1]]).reshape(-1,3)
@@ -710,72 +687,45 @@ def idle():
             #axis = np.float32([[0,0,0], [0,axis_length,0], [axis_length,axis_length,0], [axis_length,0,0],
             #       [0,0,axis_length],[0,axis_length,axis_length],[axis_length,axis_length,axis_length],[axis_length,0,axis_length] ])
             #print axis
-            # rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            # imgpts, jac = cv2.projectPoints(mesh_grid, rvecs, tvecs, camera.mtx, camera.dist)
+            rvecs, tvecs = cv2.solvePnP(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
+            imgpts, jac = cv2.projectPoints(mesh_grid, rvecs, tvecs, camera.mtx, camera.dist)
             #draw_axis(frame, center.main_corner, imgpts)
-            # draw_mesh(frame, imgpts)
+            draw_mesh(frame, imgpts)
+        else:
             ##otherwise, draw the lines to the dots
-        for i, corner in enumerate(center.final_corners):
-            ## for each corner, color each one a different color
-            if i == 0:
-                ##print 'green'
-                cv2.circle(image, corner, 20, (0,255,0), thickness=-1)
-            elif i == 1:
-                ##print 'red'
-                cv2.circle(image, corner, 15, (0,0,255), thickness=-1)
-            elif i == 2:
-                ##print 'yellow'
-                cv2.circle(image, corner, 10, (0,255,255), thickness=-1)
-            else:
-                ##print 'white'
-                cv2.circle(image, corner, 5, (255,255,255), thickness=-1)
-            ##uses the vector to draw a line on the tracked square
-        for i, vector in enumerate(center.vectors):
-            reference_point_x = center.main_corner[0] + vector[0]
-            reference_point_y = center.main_corner[1] + vector[1]
-            points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
-            cv2.polylines(image, np.int32([points]), True, (0,255,0), 3)
-                # print 'a'
+            for i, corner in enumerate(center.final_corners):
+                ## for each corner, color each one a different color
+                if i == 0:
+                    ##print 'green'
+                    cv2.circle(image, corner, 20, (0,255,0), thickness=-1)
+                elif i == 1:
+                    ##print 'red'
+                    cv2.circle(image, corner, 15, (0,0,255), thickness=-1)
+                elif i == 2:
+                    ##print 'yellow'
+                    cv2.circle(image, corner, 10, (0,255,255), thickness=-1)
+                else:
+                    ##print 'white'
+                    cv2.circle(image, corner, 5, (255,255,255), thickness=-1)
+                ##uses the vector to draw a line on the tracked square
+            for i, vector in enumerate(center.vectors):
+                reference_point_x = center.main_corner[0] + vector[0]
+                reference_point_y = center.main_corner[1] + vector[1]
+                points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
+                cv2.polylines(image, np.int32([points]), True, (0,255,0), 3)
     ## shows each video analysis in different windows
-    # cv2.imshow("Mask", mask_blue)
-    # cv2.imshow("MaskBlack", mask_black)
-    # cv2.imshow('edges', edges)
-    # cv2.imshow("Frame", frame)
-    #you must convert the image to array for glTexImage2D to work
-    #maybe there is a faster way that I don't know about yet...
-
-    # frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
-
+    #cv2.imshow("Mask", mask_blue)
+    #cv2.imshow("MaskBlack", mask_black)
+    #cv2.imshow('edges', edges)
+    #cv2.imshow("Frame", frame)
+    
     image = cv2.flip(image,0)
-    image = cv2.flip(image,1)
-    # Create Texture
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image)
-    # cv2.imshow('frame',image)
-
+    #cv2.imshow('frame',image)
     glutPostRedisplay()
+    #camera.release()
+    #cv2.destroyAllWindows();
 
-def drawAxes(length):
-  glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT) ;
-
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE) ;
-  glDisable(GL_LIGHTING) ;
-
-  glBegin(GL_LINES) ;
-  glColor3f(1,0,0) ;
-  glVertex3f(0,0,0) ;
-  glVertex3f(length,0,0);
-
-  glColor3f(0,1,0) ;
-  glVertex3f(0,0,0) ;
-  glVertex3f(0,length,0);
-
-  glColor3f(0,0,1) ;
-  glVertex3f(0,0,0) ;
-  glVertex3f(0,0,length);
-  glEnd() ;
-
-  glPopAttrib();
 
 def set2DTexMode():
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
@@ -783,9 +733,6 @@ def set2DTexMode():
     glDisable(GL_COLOR_MATERIAL)
     glDisable(GL_LIGHTING)
     glDisable(GL_LIGHT0)   
-
-
-
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -795,12 +742,9 @@ def set2DTexMode():
     glDisable(GL_DEPTH_TEST)
     glDepthMask(GL_FALSE)
 
-
     glMatrixMode(GL_MODELVIEW)
     glEnable(GL_TEXTURE_2D)
-
-
-    # glLoadIdentity()
+    glLoadIdentity()
 
 def set3DMode():
     glDepthMask(GL_TRUE)
@@ -809,29 +753,65 @@ def set3DMode():
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0) 
 
-
-
-
-    glMatrixMode(GL_PROJECTION)
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     # glViewport(0,0, width, height)
-    gluPerspective(45.0, (float(width)/float(height)), 0.0, 100.0);
-    # gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
-    # gluLookAt(0.0,-20,0.01,0,-20,0,0,100,0)
+    gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
+    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
+    
+    #glPushMatrix()
+    #glLoadMatrixd(camera.view_matrix)
 
-    glMatrixMode(GL_MODELVIEW)
+    glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
-
-
-
-    # glLoadIdentity();
+    glLoadIdentity();
 
 
 #main program loop
 def main():
+    global contour
+    global camera
+    global center
     global capture
     #start openCV capturefromCAM
     capture = cv2.VideoCapture(0)
+    contour = Contours()
+    center = Centers()
+    camera = Camera()
+    
+    blueLower = np.array([90,100,10])
+    blueUpper = np.array([150,255,255])
+
+    blackLower = np.array([0,0,0])
+    blackUpper = np.array([180, 255, 150])
+    images = glob.glob('*.png')
+    for fname in images:
+        img = cv2.imread(fname)
+        hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        ## construct a mask for the color "blue", then remove any imperfections
+        mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)
+        mask_blue = cv2.erode(mask_blue, None, iterations=1)
+        mask_blue = cv2.dilate(mask_blue, None, iterations=1)
+        ## create black mask for tracking corner
+        mask_black = cv2.inRange(hsv_frame, blackLower, blackUpper)
+        ## create edges in which to create contours
+        edges = cv2.Canny(mask_blue,100,200, apertureSize = 3)
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+        ##creates information about the contours
+        contour_information = cv2.findContours(mask_blue.copy(), cv2.RETR_CCOMP,
+            cv2.CHAIN_APPROX_SIMPLE)
+
+        ##updates each of the elements in the classes
+        contour.update_contours(contour_information)
+        center.update_centers(contour.contour_list, mask_black)
+        center.reorganize_centers()
+        camera.grab_frame_information(img, center.final_corners)
+    ret, frame = capture.read()
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    camera.calibrate_camera(gray)
+
+
     # print capture
     capture.set(3,width)
     capture.set(4,height)
@@ -840,21 +820,16 @@ def main():
     glutInitWindowSize(width, height)   # Set the window's initial width & height
     glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
     glutCreateWindow("CHICKEN")          # Create window with the given title
-    # glutFullScreen()
+    glutFullScreen()
 
     global scene
     global angle
     angle = 30.0
-
     scene = draw_scene()
     initGL()                       # Our own OpenGL initialization
     glutMainLoop()                 # Enter the infinite event-processing loop
 
-
 if __name__ == '__main__':
-    # my_mesh = mesh.Mesh.from_file('Test_Piece.STL')
-    # mesh_grid = create_mesh_grid(my_mesh)
-    # program(mesh_grid)
     width = 848
     height = 480
 

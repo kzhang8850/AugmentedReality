@@ -257,7 +257,8 @@ class Camera(object):
         self.rvecs = None
         self.tvecs = None
         self.draw_axis = False
-        self.view_matrix = False
+        self.view_matrix_bool = False
+        self.view_matrix = None
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -268,7 +269,7 @@ class Camera(object):
         #cv2.FONT_HERSHEY_PLAIN, 10, 255, thickness = 3)
     def calibrate_camera(self, gray):
         self.ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv2.calibrateCamera(self.objpoints, self.imgpoints, gray.shape[::-1],None,None)
-    def return_view_matrix(self, rvecs, tvecs):
+    def calculate_view_matrix(self, rvecs, tvecs):
         rmtx = cv2.Rodrigues(rvecs)[0]
 
         view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
@@ -281,8 +282,7 @@ class Camera(object):
                                    [ 1.0, 1.0, 1.0, 1.0]])
         view_matrix = view_matrix * inverse_matrix
  
-        view_matrix = np.transpose(view_matrix)
-        return view_matrix
+        self.view_matrix = np.transpose(view_matrix)
 def draw_axis(frame, corner, imgpts):
     #corner = tuple(corners[0].ravel())
     #print corner
@@ -327,19 +327,7 @@ def create_mesh_grid(mesh):
     scaled_grid = np.float32(scaled_grid).reshape(-1,3)
     #print scaled_grid
     return scaled_grid
-    # for triangle in mesh:
-    #     points = []
-    #     for i, number in enumerate(triangle):
-    #         points.append(number)
-    #         if (i+1)%3 == 0:
-    #             points.append(number)
-    #             mesh_grid.append(points)
-    #             points = []
-    #     print triangle
-    #     imgpts = np.int32(triangle).reshape(-1,2)
-    #     mesh_grid.append(imgpts)
-    # print mesh_grid
-    # return mesh_grid
+
 
 def program(mesh_grid):
     """runs the program"""
@@ -424,12 +412,12 @@ def program(mesh_grid):
             ## set boolean to draw axises
             camera.draw_axis = not camera.draw_axis
         if key == ord("k"):
-            camera.view_matrix = not camera.view_matrix
+            camera.view_matrix_bool = not camera.view_matrix_bool
         if center.is_tracking:
-            if camera.view_matrix:
+            if camera.view_matrix_bool:
                 rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-                view_matrix = camera.return_view_matrix(rvecs, tvecs)
-                print view_matrix
+                camera.calculate_view_matrix(rvecs, tvecs)
+                print camera.view_matrix
 
             if camera.draw_axis:
                 ##draw the cube

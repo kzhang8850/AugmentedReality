@@ -283,8 +283,8 @@ class Camera(object):
         width = 848
         height = 480
         rmtx = cv2.Rodrigues(rvecs)[0]
-        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]-.7],
-                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]+.7],
+        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
+                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
                                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
                                     [0.0       ,0.0       ,0.0       ,1.0    ]])
 

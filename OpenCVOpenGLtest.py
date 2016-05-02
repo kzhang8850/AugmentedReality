@@ -289,6 +289,8 @@ class Camera(object):
                             [rmtx[1][0],rmtx[1][1],rmtx[1][2],-tvecs[1]],
                             [rmtx[2][0],rmtx[2][1],rmtx[2][2],-tvecs[2]],
                             [0.0       ,0.0       ,0.0       ,1.0    ]])
+
+
         # view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],0],
         #                     [rmtx[1][0],rmtx[1][1],rmtx[1][2],0],
         #                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],0],
@@ -410,14 +412,12 @@ class loader:
     def draw(self):
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
-            # print tri.points[].x
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
             glVertex3f(tri.points[2].x,tri.points[2].y,tri.points[2].z)
         glEnd()
    
-        # sys.exit()
 
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
@@ -435,32 +435,6 @@ class loader:
         #     self.load_binary_stl(filename)
         print "reading binary stl file "+str(filename,)
         self.load_binary_stl(filename)
-
-  
-    #read text stl match keywords to grab the points to build the model
-    def load_text_stl(self,filename):
-        fp=open(filename,'r')
-
-        for line in fp.readlines():
-            words=line.split()
-            if len(words)>0:
-                if words[0]=='solid':
-                    self.name=words[1]
-
-                if words[0]=='facet':
-                    center=[0.0,0.0,0.0]
-                    triangle=[]
-                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
-                  
-                if words[0]=='vertex':
-                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
-                  
-                  
-                if words[0]=='endloop':
-                    #make sure we got the correct number of values before storing
-                    if len(triangle)==3:
-                        self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
-        fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
     #we use the struct library to read in and convert binary data into a format we can use
@@ -546,14 +520,12 @@ class draw_scene:
         glMatrixMode(GL_MODELVIEW)
 
     def draw(self):
-        global angle
 
         
         # glLoadIdentity()
       
         glTranslatef(0, 100.0, 100.0)
-        # glRotatef(angle,  1, 0, 0)
-        glScale(.11, .11, .11)
+        glScale(.3, .3, .3)
         self.model1.draw()
 
 def initGL():
@@ -637,10 +609,14 @@ def display():
 
     set3DMode()
 
+    glPushMatrix()
+
     if(camera.view_matrix):
         # print'a'
-        glLoadMatrixf(view_matrix)
+        glLoadMatrixd(view_matrix)
         scene.draw()
+
+    glPopMatrix()    
 
     glFlush()
     glutSwapBuffers()
@@ -723,7 +699,7 @@ def idle():
             # cv2.polylines(image, np.int32([center.final_corners]), True, (0,255,0), 3)
             view_matrix = camera.return_view_matrix(rvecs, tvecs)
             # print view_matrix
-        print'a'
+        # print'a'
 
         # if camera.draw_axis:
             ##draw the cube
@@ -808,6 +784,9 @@ def set2DTexMode():
     glDisable(GL_LIGHTING)
     glDisable(GL_LIGHT0)   
 
+
+
+
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
 
@@ -816,9 +795,12 @@ def set2DTexMode():
     glDisable(GL_DEPTH_TEST)
     glDepthMask(GL_FALSE)
 
+
     glMatrixMode(GL_MODELVIEW)
     glEnable(GL_TEXTURE_2D)
-    glLoadIdentity()
+
+
+    # glLoadIdentity()
 
 def set3DMode():
     glDepthMask(GL_TRUE)
@@ -827,16 +809,22 @@ def set3DMode():
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0) 
 
-    glMatrixMode(GL_PROJECTION);
+
+
+
+    glMatrixMode(GL_PROJECTION)
     glLoadIdentity();
     # glViewport(0,0, width, height)
-    gluPerspective(45.0, (float(width)/float(height)), 0, 500.0);
+    gluPerspective(45.0, (float(width)/float(height)), 0.0, 100.0);
     # gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
     # gluLookAt(0.0,-20,0.01,0,-20,0,0,100,0)
 
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW)
     glDisable(GL_TEXTURE_2D)
-    glLoadIdentity();
+
+
+
+    # glLoadIdentity();
 
 
 #main program loop
@@ -857,6 +845,7 @@ def main():
     global scene
     global angle
     angle = 30.0
+
     scene = draw_scene()
     initGL()                       # Our own OpenGL initialization
     glutMainLoop()                 # Enter the infinite event-processing loop
@@ -866,7 +855,7 @@ if __name__ == '__main__':
     # my_mesh = mesh.Mesh.from_file('Test_Piece.STL')
     # mesh_grid = create_mesh_grid(my_mesh)
     # program(mesh_grid)
-    width = 640
+    width = 848
     height = 480
 
     main()

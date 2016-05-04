@@ -396,7 +396,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/VAWT.STL')
+        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
         self.init_shading()
 
 
@@ -415,8 +415,6 @@ class draw_scene:
         glEnable(GL_LIGHT0)   
         glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))      
         glMatrixMode(GL_MODELVIEW)
-
-   
 
     def draw(self):
 
@@ -538,8 +536,6 @@ class OpenGLGlyphs:
  
         # get image from webcam
         image = self.webcam.get_current_frame()
-
-        # image = self.detect_square(image)
  
         # convert image to OpenGL texture format
         bg_image = cv2.flip(image, 0)
@@ -558,7 +554,6 @@ class OpenGLGlyphs:
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image)
-        # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bg_image)
         
         # draw background
         glBindTexture(GL_TEXTURE_2D, self.texture_background)

@@ -252,8 +252,13 @@ class Camera(object):
         self.objpoints = [] #3d point in real world space
         self.imgpoints = [] #2d points in image plane.
         self.criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        self.objp = np.zeros((2*2,3), np.float32)
-        self.objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
+        self.objp = np.array([[0, 0, 0],
+                            [1, 0, 0],
+                            [0, 1, 0],
+                            [1, 1, 0]], dtype = np.float32)
+        #self.translate_matrix(-2, 0, 0)
+        #self.objp = np.zeros((2*2,3), np.float32)
+        #self.objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
         self.ret = None
         self.mtx = None
         self.dist = None
@@ -269,7 +274,17 @@ class Camera(object):
                                        [ 1.0, 1.0, 1.0, 1.0]])
         self.near = 5
         self.far = 1000
-
+    def translate_matrix(self, x, y, z):
+        new_matrix = self.objp
+        for i, row in enumerate(self.objp):
+            for j, number in (enumerate(row)):
+                if j == 0:
+                    new_matrix[i][j] = self.objp[i][j] + x
+                if j == 1:
+                    new_matrix[i][j] = self.objp[i][j] + y
+                if j == 2:
+                    new_matrix[i][j] = self.objp[i][j] + z
+        self.objp = new_matrix
     def grab_frame_information(self, frame, corners):
         # Arrays to store object points and image points from all the images.
         self.objpoints.append(self.objp)
@@ -284,8 +299,8 @@ class Camera(object):
         width = 848
         height = 480
         rmtx = cv2.Rodrigues(rvecs)[0]
-        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]-.7],
-                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]+.7],
+        self.model_view = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
+                                    [rmtx[1][0],rmtx[1][1],rmtx[1][2],tvecs[1]],
                                     [rmtx[2][0],rmtx[2][1],rmtx[2][2],tvecs[2]],
                                     [0.0       ,0.0       ,0.0       ,1.0    ]])
 
@@ -436,7 +451,6 @@ class loader:
                 p=fp.read(12)
                 if len(p)==12:
                     p2=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
-
                 p=fp.read(12)
                 if len(p)==12:
                     p3=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
@@ -461,7 +475,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/Triangle_Cad.STL')
+        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
         self.init_shading()
 
 
@@ -507,12 +521,11 @@ class draw_scene:
         if camera.view_matrix_bool:
         #lBindTexture(GL_TEXTURE_2D, self.model1)
         #glPushMatrix()
-
             glLoadMatrixd(camera.view_matrix)
             glScale(.03, .03, .03)
 
             self.model1.draw()
-        #glPopMatrix()
+            #glPopMatrix()
 
 
 def initGL():
@@ -717,10 +730,9 @@ def set3DMode():
     glEnable(GL_COLOR_MATERIAL)
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0) 
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0)
+    gluPerspective(15.0, (float(width)/float(height)), 0.1, 500.0)
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)
     glLoadIdentity();

@@ -144,25 +144,9 @@ class draw_scene:
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
+        glLight(GL_LIGHT0, GL_POSITION,  (1, 1, 1, 0))      
         glMatrixMode(GL_MODELVIEW)
 
-    def init(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
-        glEnable(GL_COLOR_MATERIAL)
-      
-        glEnable(GL_LIGHTING)
-        glEnable(GLx_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))
-
-        glMatrixMode(GL_MODELVIEW)
 
     def draw(self):
         global angle
@@ -171,7 +155,7 @@ class draw_scene:
         glLoadIdentity()
       
         glTranslatef(0.0, -25.0, -250.0)
-        glRotatef(angle, 1, 0, 0)
+        glRotatef(angle, 1, 1, 3)
         # glScale(.5, .5, .5)
         self.model1.draw()
 
@@ -280,7 +264,7 @@ def set3DMode():
     glLoadIdentity();
     # glViewport(0,0, width, height)
     gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0);
-    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
+    # gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
 
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)

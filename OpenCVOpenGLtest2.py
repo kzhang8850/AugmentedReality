@@ -11,6 +11,7 @@ import imutils
 import math
 from stl import mesh
 import glob
+import random
 
 import os
 import struct
@@ -320,9 +321,9 @@ class loader:
     #draw the models faces
     def draw(self):
         glBegin(GL_TRIANGLES)
+
         for tri in self.get_triangles():
-            glColor3f(1.0, 0.0, 0.0)
-            # print tri.points[].x
+            # glColor3f(random.randint(0,1), random.randint(0,1), random.randint(0,1))
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
@@ -330,8 +331,6 @@ class loader:
         glColor3f(1.0, 1.0, 1.0)
         glEnd()
    
-        # sys.exit()
-
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -421,7 +420,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
+        self.model1.load_stl(os.path.abspath('')+'/VAWT_Test.STL')
         self.init_shading()
 
 
@@ -430,18 +429,41 @@ class draw_scene:
         glShadeModel(GL_SMOOTH)
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
+        glEnable(GL_DEPTH_TEST) 
         glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+        # glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
       
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))      
+        # glLight(GL_LIGHT0, GL_POSITION,  (0.0, 0.0, 1.0, 1.0))      
+        
+        # ambientColor = [0.0, 0.0, 0.0, 1.0]
+        # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor)
+
+        lightColor0 = [0.9, 0.9, 0.9, 1.0]
+        lightPos0 = [-30.0, -30.0, 0.0, 1.0]
+        glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor0)
+        # glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0)
+        glLightfv(GL_LIGHT0, GL_POSITION, lightPos0)
+ 
+        # glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0)
+        # spot_direction = [ 0.0, 0.0, -1.0 ]
+        # glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction)
+        # glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 2.0)
+        # glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0)
+
+        mcolor = [0.1, 0.9, 0.4]
+        # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mcolor)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mcolor)
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0)
+
+        glColor3fv(mcolor)
+
         glMatrixMode(GL_MODELVIEW)
 
     def draw(self):
+        global angle
 
         # glLoadIdentity()
         # glTranslatef(0, 100.0, 100.0)
@@ -552,7 +574,7 @@ class OpenGLGlyphs:
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
- 
+    
        
 
     def _draw_scene(self):
@@ -573,6 +595,7 @@ class OpenGLGlyphs:
         glDisable(GL_COLOR_MATERIAL)
         glDisable(GL_LIGHTING)
         glDisable(GL_LIGHT0)   
+        glEnable(GL_TEXTURE_2D)
   
         # create background texture
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
@@ -586,7 +609,7 @@ class OpenGLGlyphs:
         glTranslatef(0.0,0.0,-30.0)
         self._draw_background()
         glPopMatrix()
-
+        glDisable(GL_TEXTURE_2D)
 
         # handle glyph
         image = self._handle_glyph(image)
@@ -623,6 +646,7 @@ class OpenGLGlyphs:
  
         # load view matrix and draw cube
         # glBindTexture(GL_TEXTURE_2D, self.texture_cube)
+        scene.init_shading()
         glPushMatrix()
         glLoadMatrixd(view_matrix)
         scene.draw()
@@ -632,8 +656,6 @@ class OpenGLGlyphs:
     def _draw_cube(self):
         # draw cube
         glBegin(GL_QUADS)
-
-        glColor3f(1.0, 0.0, 0.0)
  
         glTexCoord2f(0.0, 0.0); glVertex3f( 0.0,  0.0,  0.0)
         glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,  0.0,  0.0)
@@ -664,8 +686,6 @@ class OpenGLGlyphs:
         glTexCoord2f(1.0, 0.0); glVertex3f( 0.0,  0.0, 0.0)
         glTexCoord2f(1.0, 1.0); glVertex3f( 0.0,  1.0, 0.0)
         glTexCoord2f(0.0, 1.0); glVertex3f( 0.0,  1.0, 1.0)
-
-        glColor3f(1.0, 1.0, 1.0)
  
         glEnd()
  
@@ -677,19 +697,37 @@ class OpenGLGlyphs:
         glTexCoord2f(1.0, 0.0); glVertex3f( 12.0,  9.0, 0.0)
         glTexCoord2f(0.0, 0.0); glVertex3f(-12.0,  9.0, 0.0)
         glEnd( )
+
+    def update(self, dt):
+        global angle
+        global position
+
+        angle += 2.0
+        if angle > 360.0:
+            angle -= 360.0
+
+        # Update position with global position
+
+        glutPostRedisplay()
+
+        glutTimerFunc(25, self.update, 0)
  
     def main(self):
         # setup and run OpenGL
         global scene
+        global angle
+        angle = 30.0
         scene = draw_scene()
         glutInit()
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(width, height)
         glutInitWindowPosition(width, height)
         self.window_id = glutCreateWindow("OpenGL Glyphs")
+        glutFullScreen()
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
-        # glutKeyboardFunc(self.keyboard)
+        glutKeyboardFunc(self.keyboard)
+        glutTimerFunc(25, self.update, 0)
         self._init_gl(width, height)
         glutMainLoop()
 
@@ -737,7 +775,7 @@ class OpenGLGlyphs:
         
         if center.is_tracking:
             rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            print rvecs
+            # print rvecs
         else:
             rvecs = tvecs = None
 
@@ -745,13 +783,13 @@ class OpenGLGlyphs:
 
     def keyboard(self,key,x,y):
         if key == chr(27):
-            sys.exit()
+            os._exit(0)
   
 # run an instance of OpenGL Glyphs 
 if __name__ == '__main__':
 
-    width = 640
-    height = 480
+    width = 1280
+    height = 720
 
     openGLGlyphs = OpenGLGlyphs()
     openGLGlyphs.main()

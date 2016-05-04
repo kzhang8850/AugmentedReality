@@ -133,36 +133,49 @@ class draw_scene:
 
     #solid model with a light / shading
     def init_shading(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+        # glShadeModel(GL_SMOOTH)
+        # glClearColor(0.0, 0.0, 0.0, 0.0)
+        # glClearDepth(1.0)
+        # glEnable(GL_DEPTH_TEST)
+        # glShadeModel(GL_SMOOTH) 
+        # glDepthFunc(GL_LEQUAL)
+        # glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
       
-        glEnable(GL_COLOR_MATERIAL)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
-        glMatrixMode(GL_MODELVIEW)
+        # glEnable(GL_COLOR_MATERIAL)
+        # glEnable(GL_LIGHTING)
+        # glEnable(GL_LIGHT0)   
+        # glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
+        # glMatrixMode(GL_MODELVIEW)
 
-    def init(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
 
-        glEnable(GL_COLOR_MATERIAL)
-      
-        glEnable(GL_LIGHTING)
-        glEnable(GLx_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))
 
         glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        # gluLookAt(0.0, 200.0, 0.0, 0.0, 0.0, 0.0, 0,0,1)
+     
+        ambientColor = [0.0, 0.0, 0.0, 1.0]
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor)
+     
+        #Light
+        lightColor0 = [0.9, 0.9, 0.9, 1.0]
+        lightPos0 = [0.0, 30.0, 0.0, 1]
+        glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0)
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0)
+        glLightfv(GL_LIGHT1, GL_POSITION, lightPos0)
+     
+        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0)
+        spot_direction = [ 1.0, 0.0, 0.0 ]
+        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction)
+        glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 2.0)
+        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0)
+     
+        # Material
+        mcolor = [0.1, 0.9, 0.4]
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mcolor)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mcolor)
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0)
+
+
 
     def draw(self):
         global angle
@@ -171,7 +184,7 @@ class draw_scene:
         glLoadIdentity()
       
         glTranslatef(0.0, -25.0, -250.0)
-        glRotatef(angle, 1, 0, 0)
+        glRotatef(angle, 1, 1, 0)
         # glScale(.5, .5, .5)
         self.model1.draw()
 
@@ -255,7 +268,7 @@ def set2DTexMode():
 
     glDisable(GL_COLOR_MATERIAL)
     glDisable(GL_LIGHTING)
-    glDisable(GL_LIGHT0)   
+    glDisable(GL_LIGHT1)   
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -272,9 +285,9 @@ def set2DTexMode():
 def set3DMode():
     glDepthMask(GL_TRUE)
     glEnable(GL_DEPTH_TEST)
-    glEnable(GL_COLOR_MATERIAL)
+    glDisable(GL_COLOR_MATERIAL)
     glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0) 
+    glEnable(GL_LIGHT1) 
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

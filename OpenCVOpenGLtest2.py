@@ -437,6 +437,7 @@ class Webcam:
     def _update_frame(self):
         while(True):
             self.current_frame = self.video_capture.read()[1]
+            
                   
     # get the current frame
     def get_current_frame(self):
@@ -597,11 +598,9 @@ class OpenGLGlyphs:
         view_matrix = np.transpose(view_matrix)
  
         # load view matrix and draw cube
-        # glBindTexture(GL_TEXTURE_2D, self.texture_cube)
         glPushMatrix()
         glLoadMatrixd(view_matrix)
         scene.draw()
-        # self._draw_cube()
         glPopMatrix()
  
 
@@ -626,7 +625,8 @@ class OpenGLGlyphs:
         self.window_id = glutCreateWindow("OpenGL Glyphs")
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
-        # glutKeyboardFunc(self.keyboard)
+        glutKeyboardFunc(self.keyboard)
+        # glutFullScreen()
         self._init_gl(width, height)
         glutMainLoop()
 
@@ -682,8 +682,8 @@ class OpenGLGlyphs:
 
     def keyboard(self,key,x,y):
         if key == chr(27):
-            sys.exit()
-  
+            os._exit(0)
+      
 # run an instance of OpenGL Glyphs 
 if __name__ == '__main__':
 
@@ -691,4 +691,5 @@ if __name__ == '__main__':
     height = 480
 
     openGLGlyphs = OpenGLGlyphs()
+
     openGLGlyphs.main()

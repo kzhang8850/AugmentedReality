@@ -349,31 +349,6 @@ class loader:
         print "reading binary stl file "+str(filename,)
         self.load_binary_stl(filename)
 
-  
-    #read text stl match keywords to grab the points to build the model
-    def load_text_stl(self,filename):
-        fp=open(filename,'r')
-
-        for line in fp.readlines():
-            words=line.split()
-            if len(words)>0:
-                if words[0]=='solid':
-                    self.name=words[1]
-
-                if words[0]=='facet':
-                    center=[0.0,0.0,0.0]
-                    triangle=[]
-                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
-                  
-                if words[0]=='vertex':
-                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
-                  
-                  
-                if words[0]=='endloop':
-                    #make sure we got the correct number of values before storing
-                    if len(triangle)==3:
-                        self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
-        fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
     #we use the struct library to read in and convert binary data into a format we can use
@@ -441,22 +416,7 @@ class draw_scene:
         glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))      
         glMatrixMode(GL_MODELVIEW)
 
-    def init(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
-        glEnable(GL_COLOR_MATERIAL)
-      
-        glEnable(GL_LIGHTING)
-        glEnable(GLx_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))
-
-        glMatrixMode(GL_MODELVIEW)
+   
 
     def draw(self):
 
@@ -603,7 +563,7 @@ class OpenGLGlyphs:
         # draw background
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
         glPushMatrix()
-        glTranslatef(0.0,0.0,-10.0)
+        glTranslatef(0.0,0.0,-30.0)
         self._draw_background()
         glPopMatrix()
 
@@ -649,53 +609,15 @@ class OpenGLGlyphs:
         # self._draw_cube()
         glPopMatrix()
  
-    def _draw_cube(self):
-        # draw cube
-        glBegin(GL_QUADS)
 
-        glColor3f(1.0, 0.0, 0.0)
- 
-        glTexCoord2f(0.0, 0.0); glVertex3f( 0.0,  0.0,  0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,  0.0,  0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 1.0,  1.0,  0.0)
-        glTexCoord2f(0.0, 1.0); glVertex3f( 0.0,  1.0,  0.0)
- 
-        glTexCoord2f(1.0, 0.0); glVertex3f( 0.0,  0.0, 1.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 0.0,  1.0, 1.0)
-        glTexCoord2f(0.0, 1.0); glVertex3f( 1.0,  1.0, 1.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f( 1.0,  0.0, 1.0)
- 
-        glTexCoord2f(0.0, 1.0); glVertex3f( 0.0,  1.0, 1.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f( 0.0,  1.0, 0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,  1.0, 0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 1.0,  1.0, 1.0)
- 
-        glTexCoord2f(1.0, 1.0); glVertex3f( 0.0,  0.0, 1.0)
-        glTexCoord2f(0.0, 1.0); glVertex3f( 1.0,  0.0, 1.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f( 1.0,  0.0, 0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 0.0,  0.0, 0.0)
- 
-        glTexCoord2f(1.0, 0.0); glVertex3f( 1.0,  0.0, 1.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 1.0,  1.0, 1.0)
-        glTexCoord2f(0.0, 1.0); glVertex3f( 1.0,  1.0, 0.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f( 1.0,  0.0, 0.0)
- 
-        glTexCoord2f(0.0, 0.0); glVertex3f( 0.0,  0.0, 1.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 0.0,  0.0, 0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 0.0,  1.0, 0.0)
-        glTexCoord2f(0.0, 1.0); glVertex3f( 0.0,  1.0, 1.0)
-
-        glColor3f(1.0, 1.0, 1.0)
- 
-        glEnd()
  
     def _draw_background(self):
         # draw background
         glBegin(GL_QUADS)
-        glTexCoord2f(0.0, 1.0); glVertex3f(-4.0, -3.0, 0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 4.0, -3.0, 0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 4.0,  3.0, 0.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f(-4.0,  3.0, 0.0)
+        glTexCoord2f(0.0, 1.0); glVertex3f(-12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 1.0); glVertex3f( 12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 0.0); glVertex3f( 12.0,  9.0, 0.0)
+        glTexCoord2f(0.0, 0.0); glVertex3f(-12.0,  9.0, 0.0)
         glEnd( )
  
     def main(self):

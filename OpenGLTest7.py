@@ -141,40 +141,18 @@ class draw_scene:
         # glDepthFunc(GL_LEQUAL)
         # glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
       
+
         # glEnable(GL_COLOR_MATERIAL)
         # glEnable(GL_LIGHTING)
         # glEnable(GL_LIGHT0)   
         # glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
         # glMatrixMode(GL_MODELVIEW)
 
-
-
+        glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)   
+        glLight(GL_LIGHT0, GL_POSITION,  (1, 1, 1, 0))      
         glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        # gluLookAt(0.0, 200.0, 0.0, 0.0, 0.0, 0.0, 0,0,1)
-     
-        ambientColor = [0.0, 0.0, 0.0, 1.0]
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor)
-     
-        #Light
-        lightColor0 = [0.9, 0.9, 0.9, 1.0]
-        lightPos0 = [0.0, 30.0, 0.0, 1]
-        glLightfv(GL_LIGHT1, GL_SPECULAR, lightColor0)
-        glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor0)
-        glLightfv(GL_LIGHT1, GL_POSITION, lightPos0)
-     
-        glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0)
-        spot_direction = [ 1.0, 0.0, 0.0 ]
-        glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction)
-        glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 2.0)
-        glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0)
-     
-        # Material
-        mcolor = [0.1, 0.9, 0.4]
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mcolor)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mcolor)
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0)
-
 
 
     def draw(self):
@@ -184,7 +162,8 @@ class draw_scene:
         glLoadIdentity()
       
         glTranslatef(0.0, -25.0, -250.0)
-        glRotatef(angle, 1, 1, 0)
+
+        glRotatef(angle, 1, 1, 3)
         # glScale(.5, .5, .5)
         self.model1.draw()
 
@@ -293,7 +272,7 @@ def set3DMode():
     glLoadIdentity();
     # glViewport(0,0, width, height)
     gluPerspective(45.0, (float(width)/float(height)), 0.1, 500.0);
-    gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
+    # gluLookAt(0.0,-20.0,75.0,0,-20,0,0,40.0,0)
 
     glMatrixMode(GL_MODELVIEW);
     glDisable(GL_TEXTURE_2D)

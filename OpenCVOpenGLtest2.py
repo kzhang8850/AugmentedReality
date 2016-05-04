@@ -421,7 +421,7 @@ class draw_scene:
         #create a model instance and
         self.model1=loader()
         #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/VAWT.STL')
+        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
         self.init_shading()
 
 
@@ -439,23 +439,6 @@ class draw_scene:
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)   
         glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))      
-        glMatrixMode(GL_MODELVIEW)
-
-    def init(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
-        glEnable(GL_COLOR_MATERIAL)
-      
-        glEnable(GL_LIGHTING)
-        glEnable(GLx_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))
-
         glMatrixMode(GL_MODELVIEW)
 
     def draw(self):
@@ -578,8 +561,6 @@ class OpenGLGlyphs:
  
         # get image from webcam
         image = self.webcam.get_current_frame()
-
-        # image = self.detect_square(image)
  
         # convert image to OpenGL texture format
         bg_image = cv2.flip(image, 0)
@@ -598,12 +579,11 @@ class OpenGLGlyphs:
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image)
-        # glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, bg_image)
         
         # draw background
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
         glPushMatrix()
-        glTranslatef(0.0,0.0,-10.0)
+        glTranslatef(0.0,0.0,-30.0)
         self._draw_background()
         glPopMatrix()
 
@@ -692,10 +672,10 @@ class OpenGLGlyphs:
     def _draw_background(self):
         # draw background
         glBegin(GL_QUADS)
-        glTexCoord2f(0.0, 1.0); glVertex3f(-4.0, -3.0, 0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( 4.0, -3.0, 0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( 4.0,  3.0, 0.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f(-4.0,  3.0, 0.0)
+        glTexCoord2f(0.0, 1.0); glVertex3f(-12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 1.0); glVertex3f( 12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 0.0); glVertex3f( 12.0,  9.0, 0.0)
+        glTexCoord2f(0.0, 0.0); glVertex3f(-12.0,  9.0, 0.0)
         glEnd( )
  
     def main(self):

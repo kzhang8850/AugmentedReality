@@ -361,15 +361,33 @@ class loader:
 
     # draw the models faces
     def draw(self):
-
+        global color
         # draws each stl triangle as an OpenGL triangle
         glBegin(GL_TRIANGLES)
 
         for tri in self.get_triangles():
+            if color == 0:
+                glColor3f(.73, .74, .8)
+            elif color == 1:
+                glColor3f(212.0/255,175.0/255,55.0/255)
+            elif color == 2:
+                glColor3f(220.0/255,20.0/255,60.0/255)
+            elif color == 3:
+                glColor3f(0,191.0/255,255/255)
+            elif color == 4:
+                glColor3f(50.0/255,205.0/255,50.0/255)
+            elif color == 5:
+                glColor3f(138.0/255,43.0/255,226.0/255)
+            elif color == 6:
+                r = random.randint(0,255)
+                g = random.randint(0,255)
+                b = random.randint(0,255)
+                glColor3f(r/255.0, g/255.0, b/255.0)
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
             glVertex3f(tri.points[2].x,tri.points[2].y,tri.points[2].z)
+        glColor3f(1.0, 1.0, 1.0)
         glEnd()
    
 
@@ -496,8 +514,9 @@ class AugmentedReality():
         self.webcam = Webcam()
         self.webcam.start()
         self.model1=loader()
-        file_name = raw_input("enter exact stl file name\n")
-        self.model1.load_stl(os.path.abspath('')+'/'+ file_name)
+        file_name = raw_input("enter stl file name\n")
+        exact_file_name = glob.glob(file_name+'*')
+        self.model1.load_stl(os.path.abspath('')+'/'+ exact_file_name[0])
  
         # textures
         self.texture_background = None
@@ -556,6 +575,11 @@ class AugmentedReality():
 
 
         self._set_textures() 
+    def _reload_stl(self):
+        self.model1.model = []
+        file_name = raw_input("enter stl file name\n")
+        exact_file_name = glob.glob(file_name+'*')
+        self.model1.load_stl(os.path.abspath('')+'/'+ exact_file_name[0])
        
     def _set_textures(self):
         glClearColor(0.0, 0.0, 0.0, 0.0)
@@ -803,6 +827,7 @@ class AugmentedReality():
         global turning
         global size
         global size_direction
+        global restart
 
         # if the spacebar is pressed, the stl will start to rotate
         if turning:
@@ -812,10 +837,12 @@ class AugmentedReality():
         if size_direction == 1:
             size += .001
             size_direction = 0
-            print size
         if size_direction == -1:
             size -= .001
             size_direction = 0
+        if restart:
+            self._reload_stl()
+            restart = False
         # update position with global position
         glutPostRedisplay()
         glutTimerFunc(5, self.update, 0)
@@ -879,8 +906,9 @@ class AugmentedReality():
 
         # global variable to handle rotation of stl
         global turning
-        global size
         global size_direction
+        global color
+        global restart
 
         if key == chr(27):
             # if the esc key is pressed, the program will exit
@@ -894,22 +922,41 @@ class AugmentedReality():
             size_direction = -1
         else:
             size_direction = 0
-
+        if key == chr(49):
+            color = 0
+        if key == chr(50):
+            color = 1
+        if key == chr(51):
+            color = 2
+        if key == chr(52):
+            color = 3
+        if key == chr(53):
+            color = 4    
+        if key == chr(54):
+            color = 5
+        if key == chr(55):
+            color = 6   
+        if key == chr(114):
+            restart = True
     
     # setup and run OpenGL rendering with OpenCV tracking
     def main(self):
 
         # global variables for rotation of stl file
+        global color
         global angle
         global turning
         global size
         global size_direction
+        global restart
 
         # initialize global variables
         turning = False
+        restart = False
         size_direction = 0
         size = .01
         angle = 30.0
+        color = 0
 
         # initialize window size and Glut
         glutInit(sys.argv)

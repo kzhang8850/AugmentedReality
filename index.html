@@ -1,34 +1,44 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
     <title>#GetReal by kzhang8850</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
   </head>
-
   <body>
-    <header>
-      <div class="inner">
-        <h1>#GetReal</h1>
-        <h2>Viewing CAD models in real life without having to fabricate</h2>
-        <a href="https://github.com/kzhang8850/AugmentedReality" class="button"><small>View project on</small> GitHub</a>
-      </div>
-    </header>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/kzhang8850/AugmentedReality">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/kzhang8850/AugmentedReality/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/kzhang8850/AugmentedReality/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h1>
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>#GetReal</h1>
+          <p>Viewing CAD models in real life without having to fabricate</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/kzhang8850">kzhang8850</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
 <a id="getreal" class="anchor" href="#getreal" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>#GetReal</h1>
 
 <h2>
@@ -76,7 +86,7 @@
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
 
-<p>After you have your environment configured, using #GetReal is quite easy. First, assemble your hardware, such as fixing the webcam to the Google Cardboard, setting up SplashTop, etc. Then clone the repository and load your .sti flie into the folder. Run AugmentedReality.py. The program will prompt you for an stl. Type in the name of the stl you just loaded into the folder, and put on your VR headset! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes are. Try walking around it and viewing it from different angles, and you should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!</p>
+<p>After you have your environment configured, using #GetReal is quite easy. First, assemble your hardware, such as fixing the webcam to the Google Cardboard, setting up SplashTop, etc. Then clone the repository and load your .stl flie into the folder. Run AugmentedReality.py. The program will prompt you for an stl. Type in the name of the stl you just loaded into the folder, and put on your VR headset! From your Google Cardboard, you should see your CAD model augmented into 3D space where your tracker is. Try walking around it and viewing it from different angles, and you should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!</p>
 
 <h2>
 <a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How it Works</h2>
@@ -92,9 +102,11 @@
 <p>Overall, these three stages are encapsulated in a large Augmented Reality Controller, which instantiates them and runs their loops. The result is a hierarchy of classes and their methods.</p>
 
 <h2>
-<a id="what-it-can-do" class="anchor" href="#what-it-can-do" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What it can Do</h2>
+<a id="what-it-can-do" class="anchor" href="#what-it-can-do" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>What It Can Do</h2>
 
 <p>Below are some pictures and a video demonstrating our project. Through these examples, it is worth noting some of the strengths and limitations of the project. #GetReal is powerful in that creators can iterate very quickly with a strong source of feedback; the program is designed to be fast and lightweight. It also has an additional basic option to spin the stl object around, so users can see their object in motion if they so choose. It is also quite modular, as it can take just about any stl which can be converted to from almost any CAD development platform. Some issues arise in its user experience. As it is merely a prototype, there is little room for direct manipulation with the projected object. Our project also can't view textures, and neither can it be used to manually manipulate the object. However, we believe that a lot of those additional ideas would detract from the simplicity and intuitiveness of the program. We stuck with the version in our minds most realistic for rapid prototyping. </p>
+
+<p><img src="https://www.youtube.com/watch?v=UUB_L_ZMa2s" alt="Oh yes..."></p>
 
 <h2>
 <a id="how-we-got-here" class="anchor" href="#how-we-got-here" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How we got here</h2>
@@ -130,25 +142,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
-        </section>
+      </section>
 
-        <aside id="sidebar">
-          <a href="https://github.com/kzhang8850/AugmentedReality/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/kzhang8850/AugmentedReality/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
-
-          <p class="repo-owner"><a href="https://github.com/kzhang8850/AugmentedReality"></a> is maintained by <a href="https://github.com/kzhang8850">kzhang8850</a>.</p>
-
-          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
     </div>
-
-  
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
   </body>
 </html>

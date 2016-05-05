@@ -711,6 +711,9 @@ class AugmentedReality():
 
         self._set_textures() 
     def _reload_stl(self):
+        """
+        Allows for the user to re-input a new stl on the spot
+        """
         self.model1.model = []
         file_name = raw_input("enter stl file name\n")
         exact_file_name = glob.glob(os.path.abspath('')+'/STL/'+ file_name+'*')

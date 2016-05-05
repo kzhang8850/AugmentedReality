@@ -28,9 +28,10 @@ Once you have all your hardware, you will also need to download Python and the f
  - Pip `$sudo install pip`
  - OpenCV `$sudo pip install opencv`
  - OpenGL (download from website http://pyopengl.sourceforge.net/documentation/installation.html)
- - sudo `$pip install numpy-stl`
+ - STL `$pip install numpy-stl`
  - Numpy `$pip install numpy`
- - other stuff TBD
+ - PIL `sudo pip install pil`
+ - And some more, depending on your current configurations (most should be very easy to download, Google is your friend)
 
 ##Usage
 

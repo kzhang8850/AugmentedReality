@@ -9,9 +9,9 @@ The Repository for the Final Project done in Software Design, Spring 2016.
 
 ##What is #GetReal?
 
-Creators and Developers often like to tinker and make things. For more software-oriented people, testing out a new idea is as easy as the push of a keyboard button. But for hardware and mechanical-oriented enthusiasts, experimentation is time consuming and difficult, requiring either a drawn out repetitive fabrication of a singular object or a pain-staking scrutinization on ensuring perfection on a first-pass construction. 
+Creators and Developers often like to tinker and make things. For software designers, testing out a new idea is as easy as the push of a keyboard button. But for hardware and mechanical-oriented enthusiasts, experimentation is time consuming and difficult, requiring either a drawn out, repetitive fabrication of a singular object or a pain-staking analysis on ensuring perfection for a first-pass construction. 
 
-Using the power of augmented reality, #GetReal levels the playing field. Now you can load up an stl file of a CAD, put on some Virtual Reality Goggles, and see what your CAD would look like in 3D space, all before you even had to touch a single piece of material. Users can have access to the same kind of quick testing that software engineers do, simply making some tweaks in the CAD, re-uploading, and seeing the changes in the real world. #GetReal allows for rapid prototyping and efficient iterations, streamlining the process of development for aspiring mechanical and electrical engineers.
+Using the power of augmented reality, #GetReal levels the playing field. Now you can load up an stl file of a CAD, put on some Virtual Reality Goggles, and see what your CAD would look like in 3D space, all before you even had to touch a single piece of material. Users can have access to the same kind of quick testing that software engineers do, simply making some tweaks in the CAD, re-uploading, and seeing how the changes appear in the real world. #GetReal allows for rapid prototyping and efficient iterations, streamlining the process of development for aspiring mechanical and electrical engineers.
 
 ##Getting Started
 
@@ -19,25 +19,22 @@ Using #GetReal requires some extra hardware in addition to software dependencies
 
  - Google Cardboard (or some other VR headset)
  - High Performance Webcam
- - 3D Camera Lens (from Amazon)
  - A smartphone (ios or android)
- - Duet Display (from app store)
- - Two blue post-it notes and a green post-it note to form a right isosceles triangle where the green post-it is at the 90 degree corner
- - other stuff TBD
+ - Splashtop Streamer (from app store)
+ - Four blue post-it notes in a square, with one blue post-it colored black in the center.
  
 Once you have all your hardware, you will also need to download Python and the following python packages:
  
  - Pip `$sudo install pip`
  - OpenCV `$sudo pip install opencv`
  - OpenGL (download from website http://pyopengl.sourceforge.net/documentation/installation.html)
- - Pyglet/Pygame `$pip install pygame`
+ - sudo `$pip install numpy-stl`
  - Numpy `$pip install numpy`
  - other stuff TBD
- 
 
 ##Usage
- 
-After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. The only required input for the code to run is an .stl file. Once you have everything set up, just plug it all in and run GetReal.py! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes were. Try walking around it and viewing it from different angles, and you should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!
+
+After you have your environment configured, take the CAD file you want to view and save it as a binary .stl. Copy it into the folder that contains our Github repository. Once you have everything set up, first, set up the computer to phone connection. Run Splashtop on your computer and phone, and pair them together. Once you see your computer screen on your phone, run GetReal.py, and insert the name of the .stl. You are all ready to view the CAD model! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes are. You can press space to rotate the CAD, M to decrease size and K to increase size. You can even press the number keys to change the color of the stl! Press r to reinput an stl file. (Make sure GetReal2 is selected when making keystrokes.) Try walking around it and viewing it from different angles. You should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!
 
 
 ##Acknowledgements
@@ -67,3 +64,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+

@@ -11,6 +11,7 @@ import imutils
 import math
 from stl import mesh
 import glob
+import random
 
 import os
 import struct
@@ -289,7 +290,7 @@ class createtriangle:
 
     def __init__(self,p1,p2,p3,n=None):
         #3 points of the triangle
-        self.points=createpoint(p1),createpoint(p2),createpoint(p3)
+        self.points=[createpoint(p1),createpoint(p2),createpoint(p3)]
       
         #triangles normal
         self.normal=createpoint(self.calculate_normal(self.points[0],self.points[1],self.points[2]))#(0,1,0)#
@@ -306,6 +307,8 @@ class createtriangle:
   
     def cross_product(self,p1,p2):
         return (p1[1]*p2[2]-p2[1]*p1[2]) , (p1[2]*p2[0])-(p2[2]*p1[0]) , (p1[0]*p2[1])-(p2[0]*p1[1])
+    def magnitude(self, p1, p2):
+        return math.sqrt(p1**2 + p2**2)
 
 class loader:
     model=[]
@@ -319,10 +322,13 @@ class loader:
 
     #draw the models faces
     def draw(self):
+
         glBegin(GL_TRIANGLES)
+
         for tri in self.get_triangles():
-            glColor3f(1.0, 0.0, 0.0)
-            # print tri.points[].x
+            #glColor3f(.83, .686, .215)
+            glColor3f(.73, .74, .8)
+            #glColor3f(random.randint(0,1), random.randint(0,1), random.randint(0,1))
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
@@ -330,8 +336,6 @@ class loader:
         glColor3f(1.0, 1.0, 1.0)
         glEnd()
    
-        # sys.exit()
-
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -363,7 +367,6 @@ class loader:
                 p=fp.read(12)
                 if len(p)==12:
                     n=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
-                  
                 p=fp.read(12)
                 if len(p)==12:
                     p1=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
@@ -390,46 +393,13 @@ class loader:
                 break
         fp.close()
 
-
-class draw_scene:
-    def __init__(self,style=1):
-        #create a model instance and
-        self.model1=loader()
-        #self.model1.load_stl(os.path.abspath('')+'/text.stl')
-        self.model1.load_stl(os.path.abspath('')+'/Cube_Cad.STL')
-        self.init_shading()
-
-
-    #solid model with a light / shading
-    def init_shading(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-      
-        glEnable(GL_COLOR_MATERIAL)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0.0, 1.0, 1.0, 2.0))      
-        glMatrixMode(GL_MODELVIEW)
-
-    def draw(self):
-
-        # glLoadIdentity()
-        # glTranslatef(0, 100.0, 100.0)
-        # glRotatef(angle,  1, 0, 0)
-        glScale(.01, .01, .01)
-        self.model1.draw()
-
 class Webcam:
   
     def __init__(self):
         self.video_capture = cv2.VideoCapture(0)
         self.current_frame = self.video_capture.read()[1]
-          
+        self.video_capture_2 = cv2.VideoCapture(1)
+        self.current_frame_2 = self.video_capture_2.read()[1]  
     # create thread for capturing images
     def start(self):
         Thread(target=self._update_frame, args=()).start()
@@ -437,10 +407,14 @@ class Webcam:
     def _update_frame(self):
         while(True):
             self.current_frame = self.video_capture.read()[1]
+            self.current_frame_2 = self.video_capture_2.read()[1]
+            
                   
     # get the current frame
     def get_current_frame(self):
         return self.current_frame
+    def get_current_frame_2(self):
+        return self.current_frame_2
  
 class OpenGLGlyphs:
  
@@ -454,10 +428,15 @@ class OpenGLGlyphs:
         # initialise webcam and start thread
         self.webcam = Webcam()
         self.webcam.start()
- 
+        self.model1=loader()
+        #self.model1.load_stl(os.path.abspath('')+'/text.stl')
+        self.model1.load_stl(os.path.abspath('')+'/VAWT_Test.STL')
         # textures
         self.texture_background = None
         self.texture_cube = None
+        self.is_window_1 = True
+        self.window_id = None
+        self.window_id_2 = None
  
     def _init_gl(self, Width, Height):
 
@@ -475,10 +454,11 @@ class OpenGLGlyphs:
         blackLower = np.array([0,0,0])
         blackUpper = np.array([180, 255, 150])
 
-        images = glob.glob('*.png')
+        images = glob.glob('*test_*.png')
         for fname in images:
             img = cv2.imread(fname)
             img = cv2.flip(img, 1)
+            img = imutils.resize(img, width=780,)
             hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
             ## construct a mask for the color "blue", then remove any imperfections
             mask_blue = cv2.inRange(hsv_frame, blueLower, blueUpper)
@@ -516,16 +496,73 @@ class OpenGLGlyphs:
         glEnable(GL_TEXTURE_2D)
         self.texture_background = glGenTextures(1)
 
+        ##shading
+        glShadeModel(GL_SMOOTH)
+        glClearColor(0.0, 0.0, 0.0, 0.0)
+        glClearDepth(1.0)
+        glEnable(GL_NORMALIZE)
+        glEnable(GL_DEPTH_TEST) 
+        glDepthFunc(GL_LEQUAL)
+        # glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+      
+        #glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)   
+        # glLight(GL_LIGHT0, GL_POSITION,  (0.0, 0.0, 1.0, 1.0))      
+        
+        # ambientColor = [0.0, 0.0, 0.0, 1.0]
+        # glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientColor)
+
+        lightColor0 = [0.9, 0.9, 0.9, 1.0]
+        lightPos0 = [-30.0, -30.0, -20.0, 1.0]
+        glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor0)
+        # glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor0)
+        glLightfv(GL_LIGHT0, GL_POSITION, lightPos0)
+
+        m_amb = [.24725, .1995, .19225, 1.0]
+        m_diff =[.75164, .60648, .22648, 1.0]
+        m_spec = [.628281, .555802, .366065, 1.0]
+        m_shine = .4
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, m_amb)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, m_diff)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, m_spec)
+        glMaterialf(GL_FRONT, GL_SHININESS, 128.0*m_shine)
+        glEnable(GL_COLOR_MATERIAL)
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+        
+        # glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0)
+        # spot_direction = [ 0.0, 0.0, -1.0 ]
+        # glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction)
+        # glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION, 2.0)
+        # glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0)
+        
+
+
+        #glColor3fv(mcolor)
+
+        glMatrixMode(GL_MODELVIEW)
+    
+       
+
     def _draw_scene(self):
+        if self.is_window_1:
+            glutSetWindow(self.window_id)
+            self.is_window_1 = False
+        else:
+            glutSetWindow(self.window_id_2)
+            self.is_window_1 = True
+        # get image from webcam
+        if self.is_window_1:
+            image = self.webcam.get_current_frame()
+        else:
+            image = self.webcam.get_current_frame_2()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
  
-        # get image from webcam
-        image = self.webcam.get_current_frame()
- 
+
         # convert image to OpenGL texture format
         bg_image = cv2.flip(image, 0)
-        bg_image = cv2.flip(bg_image, 1)
+        #bg_image = cv2.flip(bg_image, 1)
         bg_image = Image.fromarray(bg_image)     
         ix = bg_image.size[0]
         iy = bg_image.size[1]
@@ -534,6 +571,7 @@ class OpenGLGlyphs:
         glDisable(GL_COLOR_MATERIAL)
         glDisable(GL_LIGHTING)
         glDisable(GL_LIGHT0)   
+        glEnable(GL_TEXTURE_2D)
   
         # create background texture
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
@@ -547,17 +585,15 @@ class OpenGLGlyphs:
         glTranslatef(0.0,0.0,-30.0)
         self._draw_background()
         glPopMatrix()
-
+        glDisable(GL_TEXTURE_2D)
 
         # handle glyph
         image = self._handle_glyph(image)
- 
         glutSwapBuffers()
- 
+
     def _handle_glyph(self, image):
 
-        global scene
- 
+
         # attempt to detect glyph
         rvecs = None
         tvecs = None
@@ -583,39 +619,62 @@ class OpenGLGlyphs:
         view_matrix = np.transpose(view_matrix)
  
         # load view matrix and draw cube
+
         # glBindTexture(GL_TEXTURE_2D, self.texture_cube)
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity();
+        gluPerspective(40, 1.3, 0.1, 100.0)
+        glMatrixMode(GL_MODELVIEW);
         glPushMatrix()
         glLoadMatrixd(view_matrix)
-        scene.draw()
-        # self._draw_cube()
+        glScale(.01, .01, .01)
+        self.model1.draw()
         glPopMatrix()
- 
 
  
     def _draw_background(self):
         # draw background
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity();
+        gluPerspective(33.7, 1.3, 0.1, 100.0)
+        glMatrixMode(GL_MODELVIEW);
         glBegin(GL_QUADS)
-        x = 12.0
-        y = 9.0
-        glTexCoord2f(0.0, 1.0); glVertex3f(-x, -y, 0.0)
-        glTexCoord2f(1.0, 1.0); glVertex3f( x, -y, 0.0)
-        glTexCoord2f(1.0, 0.0); glVertex3f( x,  y, 0.0)
-        glTexCoord2f(0.0, 0.0); glVertex3f(-x,  y, 0.0)
+        glTexCoord2f(0.0, 1.0); glVertex3f(-12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 1.0); glVertex3f( 12.0, -9.0, 0.0)
+        glTexCoord2f(1.0, 0.0); glVertex3f( 12.0,  9.0, 0.0)
+        glTexCoord2f(0.0, 0.0); glVertex3f(-12.0,  9.0, 0.0)
         glEnd( )
+
+    def update(self, dt):
+        global angle
+        global position
+
+        angle += 2.0
+        if angle > 360.0:
+            angle -= 360.0
+
+        # Update position with global position
+
+        glutPostRedisplay()
+
+        glutTimerFunc(25, self.update, 0)
  
     def main(self):
         # setup and run OpenGL
-        global scene
-        scene = draw_scene()
+        global angle
+        angle = 30.0
         glutInit()
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(width, height)
-        glutInitWindowPosition(0, 0) # Position the window's initial top-left corner
+        glutInitWindowPosition(width, height)
         self.window_id = glutCreateWindow("OpenGL Glyphs")
-        glutFullScreen()
+
+        #glutFullScreen()
+        self.window_id_2 = glutCreateWindow("OpenGL Glyphs2")
+        glutKeyboardFunc(self.keyboard)
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
-        # glutKeyboardFunc(self.keyboard)
+        glutTimerFunc(25, self.update, 0)
         self._init_gl(width, height)
         glutMainLoop()
 
@@ -626,10 +685,8 @@ class OpenGLGlyphs:
         global center
 
         #Return the rvecs and tvecs of an image
-        x_factor = .8
-        y_factor = .5
-        frame = imutils.resize(image, height = int(1079*y_factor), width = int(1891*x_factor))
-        frame = cv2.flip(frame, 1)
+
+        frame = imutils.resize(image, width = 750)
         # frame = cv2.flip(frame,1)
         # cv2.imshow("Original_Frame", frame)
         ## color space
@@ -658,13 +715,13 @@ class OpenGLGlyphs:
 
         if len(center.corners) == 4:
             center.reorganize_centers()
-            #print center.main_corner
         center.update_vectors()
         center.bool_is_tracking()
-        # print 'b'        
+        # print 'b'
+        
         if center.is_tracking:
             rvecs, tvecs, inliers = cv2.solvePnPRansac(camera.objp, np.array(center.final_corners, dtype = np.float32), camera.mtx, camera.dist)
-            #print rvecs
+            # print rvecs
         else:
             rvecs = tvecs = None
 
@@ -672,13 +729,14 @@ class OpenGLGlyphs:
 
     def keyboard(self,key,x,y):
         if key == chr(27):
-            sys.exit()
-  
+            os._exit(0)
+
 # run an instance of OpenGL Glyphs 
 if __name__ == '__main__':
 
-    width = 848
-    height = 480
+    width = 1280
+    height = 720
 
     openGLGlyphs = OpenGLGlyphs()
+
     openGLGlyphs.main()

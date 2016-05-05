@@ -341,7 +341,7 @@ def program(mesh_grid):
 
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
-    images = glob.glob('*.png')
+    images = glob.glob('*Frame*.png')
     for fname in images:
         img = cv2.imread(fname)
         hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -383,9 +383,10 @@ def program(mesh_grid):
         """
         #cv2.waitKey(300)
 
-    cap = cv2.VideoCapture(0)
-    cap.set(3,848)
-    cap.set(4,470)
+    cap = cv2.VideoCapture(2)
+    cap2 = cv2.VideoCapture(1)
+    #cap.set(3,848)
+    #cap.set(4,470)
     #cap.set(15, 0.1)
     ## keep looping
     ret, frame = cap.read()
@@ -394,13 +395,18 @@ def program(mesh_grid):
 
     while True:
         ## grab the current frame
-        ret, frame = cap.read()
-    
+        ret, frame_original = cap.read()
+        frame_original = imutils.resize(frame_original, width=600,)
+        frame_original = cv2.flip(frame_original,1)
+        #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+        #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        cv2.imshow("laptopcam", frame_original)
+        ret2, frame = cap2.read()
         ## resize the frame, blur it, and convert it to the HSV
-        frame = imutils.resize(frame, width=848,)
+        frame = imutils.resize(frame, width=600,)
         frame = cv2.flip(frame,1)
-        cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
-        cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+        #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
         cv2.imshow("test", frame)
         ## color space
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)

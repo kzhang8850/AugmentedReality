@@ -770,7 +770,7 @@ def main():
 
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
-    images = glob.glob('*.png')
+    images = glob.glob('*test_*.png')
     for fname in images:
         img = cv2.imread(fname)
         hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)

@@ -364,7 +364,7 @@ def program(mesh_grid):
         center.update_centers(contour.contour_list, mask_black)
         center.reorganize_centers()
         camera.grab_frame_information(img, center.final_corners)
-        """
+        
         for i, corner in enumerate(center.final_corners):
                     ## for each corner, color each one a different color
                     if i == 0:
@@ -379,12 +379,11 @@ def program(mesh_grid):
                     else:
                         ##print 'white'
                         cv2.circle(img, corner, 5, (255,255,255), thickness=-1)
-        cv2.imshow("calibration", img)
-        """
+        #cv2.imshow("calibration", img)
+        
         #cv2.waitKey(300)
 
-    cap = cv2.VideoCapture(2)
-    cap2 = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     #cap.set(3,848)
     #cap.set(4,470)
     #cap.set(15, 0.1)
@@ -395,19 +394,16 @@ def program(mesh_grid):
 
     while True:
         ## grab the current frame
-        ret, frame_original = cap.read()
-        frame_original = imutils.resize(frame_original, width=600,)
-        frame_original = cv2.flip(frame_original,1)
+        ret, frame = cap.read()
         #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
         #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
-        cv2.imshow("laptopcam", frame_original)
-        ret2, frame = cap2.read()
+        frame = frame[:,140:460]
         ## resize the frame, blur it, and convert it to the HSV
         frame = imutils.resize(frame, width=600,)
         frame = cv2.flip(frame,1)
         #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
         #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
-        cv2.imshow("test", frame)
+        cv2.imshow("cut_frame", frame)
         ## color space
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         ## construct a mask for the color "blue", then remove any imperfections

@@ -382,13 +382,14 @@ class loader:
         type=h[0:5]
         fp.close()
 
-        if type=='solid':
-            print "reading text file"+str(filename)
-            self.load_text_stl(filename)
-        else:
-            print "reading binary stl file "+str(filename,)
-            self.load_binary_stl(filename)
-
+        # if type=='solid':
+        #     print "reading text file"+str(filename)
+        #     self.load_text_stl(filename)
+        # else:
+        #     print "reading binary stl file "+str(filename,)
+        #     self.load_binary_stl(filename)
+        print "reading binary stl file "+str(filename,)
+        self.load_binary_stl(filename)
 
     # read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
@@ -496,7 +497,7 @@ class AugmentedReality():
 
         # load stl
         self.model1=loader()
-        self.model1.load_stl(os.path.abspath('')+'/Chicken.stl')
+        self.model1.load_stl(os.path.abspath('')+'/Test_Piece.STL')
  
         # textures
         self.texture_background = None
@@ -603,24 +604,28 @@ class AugmentedReality():
  
         # get image from webcam
         image = self.webcam.get_current_frame()
+        image = cv2.flip(image,0)
+        image = cv2.flip(image,1)
  
         # convert image to OpenGL texture format
-        bg_image = cv2.flip(image, 0)
-        bg_image = cv2.flip(bg_image, 1)
-        bg_image = Image.fromarray(bg_image)     
-        ix = bg_image.size[0]
-        iy = bg_image.size[1]
-        bg_image = bg_image.tostring("raw", "BGRX", 0, -1)
+        bg_image_right_crop = image[:,140:460]
+
+        bg_image_right = Image.fromarray(bg_image_right_crop)     
+        ix = bg_image_right.size[0]
+        iy = bg_image_right.size[1]
+        bg_image_right = bg_image_right.tostring("raw", "BGRX", 0, -1)
+
+        glViewport(width/2,0,width/2,height)
 
         # disable lighting and enable textures for background
         glDisable(GL_LIGHTING)  
         glEnable(GL_TEXTURE_2D)
-  
+
         # create background texture
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image)
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image_right)
         
         # draw background
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
@@ -634,7 +639,41 @@ class AugmentedReality():
         glDisable(GL_TEXTURE_2D)
 
         # handle glyph
-        image = self._handle_glyph(image)
+        self._handle_glyph(bg_image_right_crop)
+
+        #bg_image_left = cv2.flip(bg_image, 1)
+        bg_image_left_crop = image[:,180:500]
+
+        bg_image_left = Image.fromarray(bg_image_left_crop) 
+        ix = bg_image_left.size[0]
+        iy = bg_image_left.size[1]
+        bg_image_left = bg_image_left.tostring("raw", "BGRX", 0, -1)
+
+        glViewport(0, 0, width/2, height)
+
+        # disable lighting and enable textures for background
+        glDisable(GL_LIGHTING)  
+        glEnable(GL_TEXTURE_2D)
+
+        # create background texture
+        glBindTexture(GL_TEXTURE_2D, self.texture_background)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image_left)
+        
+        # draw background
+        glBindTexture(GL_TEXTURE_2D, self.texture_background)
+        glPushMatrix()
+        glTranslatef(0.0,0.0,-30.0)
+        self._draw_background()
+        glPopMatrix()
+
+        # enable Lighting and disable textures for stl
+        glEnable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
+
+        # handle glyph
+        self._handle_glyph(bg_image_left_crop)
  
         # display window
         glutSwapBuffers()
@@ -701,7 +740,7 @@ class AugmentedReality():
 
         # if the spacebar is pressed, the stl will start to rotate
         if turning:
-            angle += 2.0
+            angle += 5.0
             if angle > 360.0:
                 angle -= 360.0
 
@@ -719,8 +758,9 @@ class AugmentedReality():
         global center
 
         # format image for tracking
-        frame = imutils.resize(image, width = 640)
-        frame = cv2.flip(frame, 1)
+        frame = imutils.resize(image, width = 320)
+        frame = cv2.flip(frame, 0)
+        # frame = cv2.flip(frame, 1)
 
         # color space
         blueLower = np.array([90,100,10])
@@ -789,21 +829,20 @@ class AugmentedReality():
         angle = 30.0
 
         # initialize window size and Glut
-        glutInit()
+        glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
         glutInitWindowSize(width, height)
         glutInitWindowPosition(width, height)
-        glutCreateWindow("#GetREAL")
-        glutFullScreen()
 
-        # set display, idle, keyboard, and update functions
+        # create window and set glut functions
+        glutCreateWindow("#GetREAL")
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
         glutKeyboardFunc(self.keyboard)
         glutTimerFunc(25, self.update, 0)
-
-        # initialize OpenGL 
         self._init_gl(width, height)
+
+        glutFullScreen()
 
         # run Glut
         glutMainLoop()
@@ -812,8 +851,8 @@ class AugmentedReality():
 if __name__ == '__main__':
 
     # screen aspect ratio
-    width = 1280
-    height = 720
+    width = int(1280*1.5)
+    height = int(720*1.5)
 
     # run an instance of AugmentedReality 
     GetREAL = AugmentedReality()

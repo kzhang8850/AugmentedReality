@@ -779,7 +779,7 @@ class AugmentedReality():
         # get image from webcam
         image = self.webcam.get_current_frame()
         image = cv2.flip(image,0)
-        image = cv2.flip(image,1)
+        #image = cv2.flip(image,1)
  
         image_array = Image.fromarray(image)
         ix = image_array.size[0]
@@ -822,7 +822,7 @@ class AugmentedReality():
         # get image from webcam
         image = self.webcam.get_current_frame()
         image = cv2.flip(image,0)
-        image = cv2.flip(image,1)
+        #image = cv2.flip(image,1)
 
 
         # disable lighting and enable textures for background
@@ -966,7 +966,7 @@ class AugmentedReality():
         # format image for tracking
         frame = imutils.resize(image, width = 750)
         frame = cv2.flip(frame, 0)
-        frame = cv2.flip(frame, 1)
+        #frame = cv2.flip(frame, 1)
 
         # color space
         blueLower = np.array([90,100,10])

@@ -525,7 +525,7 @@ class AugmentedReality():
 
 
         # calibrate webcam to detect tracker
-        images = glob.glob('*test*.png')
+        images = glob.glob('*calibration*.png')
 
         for fname in images:
             img = cv2.imread(fname)

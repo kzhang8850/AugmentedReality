@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -15,10 +12,8 @@ import math
 from stl import mesh
 import glob
 import random
-
 import os
 import struct
-
 import sys
 
 
@@ -379,17 +374,18 @@ class loader:
         # read start of file to determine if its a binay stl file or a ascii stl file
         fp=open(filename,'rb')
         h=fp.read(80)
-        type=h[0:5]
+        type=h[6:13]
+        print type
         fp.close()
 
-        # if type=='solid':
-        #     print "reading text file"+str(filename)
-        #     self.load_text_stl(filename)
-        # else:
-        #     print "reading binary stl file "+str(filename,)
-        #     self.load_binary_stl(filename)
-        print "reading binary stl file "+str(filename,)
-        self.load_binary_stl(filename)
+        if type=='Default':
+            print "reading text file"+str(filename)
+            self.load_text_stl(filename)
+        else:
+            print "reading binary stl file "+str(filename,)
+            self.load_binary_stl(filename)
+        #print "reading binary stl file "+str(filename,)
+        #self.load_binary_stl(filename)
 
     # read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
@@ -464,7 +460,7 @@ class Webcam:
     def __init__(self):
 
         # set webcam video feed
-        self.video_capture = cv2.VideoCapture(1)
+        self.video_capture = cv2.VideoCapture(0)
         self.current_frame = self.video_capture.read()[1]
           
     # create thread for capturing images
@@ -494,10 +490,9 @@ class AugmentedReality():
         # initialise webcam and start thread
         self.webcam = Webcam()
         self.webcam.start()
-
-        # load stl
         self.model1=loader()
-        self.model1.load_stl(os.path.abspath('')+'/STL/Test_Piece.STL')
+        file_name = raw_input("enter exact stl file name\n")
+        self.model1.load_stl(os.path.abspath('')+'/STL/'+ file_name)
  
         # textures
         self.texture_background = None
@@ -525,7 +520,9 @@ class AugmentedReality():
 
 
         # calibrate webcam to detect tracker
+
         images = glob.glob(os.path.abspath('') + '/Pictures/*calibration*.png')
+
 
         for fname in images:
             img = cv2.imread(fname)
@@ -770,8 +767,9 @@ class AugmentedReality():
         glLoadMatrixd(view_matrix)
 
         # rotates and scales the stl
-        #glRotatef(angle, 0, 0, 1.0)
-        glScale(.01, .01, .01)
+        glRotatef(angle, 0, 0, 1.0)
+
+        glScale(size, size, size)
 
         # draws stl
         self.model1.draw()
@@ -800,16 +798,24 @@ class AugmentedReality():
         # global variables for rotation of stl file
         global angle
         global turning
+        global size
+        global size_direction
 
         # if the spacebar is pressed, the stl will start to rotate
         if turning:
-            angle += 5.0
+            angle += 2.0
             if angle > 360.0:
                 angle -= 360.0
-
+        if size_direction == 1:
+            size += .001
+            size_direction = 0
+            print size
+        if size_direction == -1:
+            size -= .001
+            size_direction = 0
         # update position with global position
         glutPostRedisplay()
-        glutTimerFunc(25, self.update, 0)
+        glutTimerFunc(5, self.update, 0)
  
 
     # returns the rvecs and the tvecs of an image
@@ -870,6 +876,8 @@ class AugmentedReality():
 
         # global variable to handle rotation of stl
         global turning
+        global size
+        global size_direction
 
         if key == chr(27):
             # if the esc key is pressed, the program will exit
@@ -877,6 +885,12 @@ class AugmentedReality():
         if key == chr(32):
             # if spacebar is pressed, the stl file will start rotating
             turning = not turning
+        if key == chr(107):
+            size_direction = 1
+        elif key == chr(109):
+            size_direction = -1
+        else:
+            size_direction = 0
 
     
     # setup and run OpenGL rendering with OpenCV tracking
@@ -885,9 +899,13 @@ class AugmentedReality():
         # global variables for rotation of stl file
         global angle
         global turning
+        global size
+        global size_direction
 
         # initialize global variables
         turning = False
+        size_direction = 0
+        size = .01
         angle = 30.0
 
         # initialize window size and Glut
@@ -903,7 +921,7 @@ class AugmentedReality():
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
         glutKeyboardFunc(self.keyboard)
-        glutTimerFunc(25, self.update, 0)
+        glutTimerFunc(5, self.update, 0)
         self._init_gl(width, height)
 
         #glutFullScreen()

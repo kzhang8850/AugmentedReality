@@ -133,14 +133,21 @@ class draw_scene:
 
     #solid model with a light / shading
     def init_shading(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+        # glShadeModel(GL_SMOOTH)
+        # glClearColor(0.0, 0.0, 0.0, 0.0)
+        # glClearDepth(1.0)
+        # glEnable(GL_DEPTH_TEST)
+        # glShadeModel(GL_SMOOTH) 
+        # glDepthFunc(GL_LEQUAL)
+        # glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
       
+
+        # glEnable(GL_COLOR_MATERIAL)
+        # glEnable(GL_LIGHTING)
+        # glEnable(GL_LIGHT0)   
+        # glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
+        # glMatrixMode(GL_MODELVIEW)
+
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)   
@@ -155,6 +162,7 @@ class draw_scene:
         glLoadIdentity()
       
         glTranslatef(0.0, -25.0, -250.0)
+
         glRotatef(angle, 1, 1, 3)
         # glScale(.5, .5, .5)
         self.model1.draw()
@@ -239,7 +247,7 @@ def set2DTexMode():
 
     glDisable(GL_COLOR_MATERIAL)
     glDisable(GL_LIGHTING)
-    glDisable(GL_LIGHT0)   
+    glDisable(GL_LIGHT1)   
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -256,9 +264,9 @@ def set2DTexMode():
 def set3DMode():
     glDepthMask(GL_TRUE)
     glEnable(GL_DEPTH_TEST)
-    glEnable(GL_COLOR_MATERIAL)
+    glDisable(GL_COLOR_MATERIAL)
     glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0) 
+    glEnable(GL_LIGHT1) 
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

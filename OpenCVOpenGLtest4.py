@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -11,7 +14,7 @@ import imutils
 import math
 from stl import mesh
 import glob
-
+import random
 
 import os
 import struct
@@ -19,28 +22,33 @@ import struct
 import sys
 
 
+# class for detecting contours of tracker
 class Contours(object):
+
     def __init__(self):
-        """initializes variables"""
         self.contour_list = []
         self.centers = []
 
+    # creates contours sorted by area size (biggest to smallest) from contour_information
     def update_contours(self, contour_information):
-        """creates contours sorted by area size (biggest to smallest) from contour_information"""
-        ## grab all the contour information and store the actual contours into contours
+
+        # grab all the contour information and store the actual contours into contours
         contours = contour_information[0]
         self.contour_list = []
-        ## if the number of contours is atleast 4,
+
+        # if the number of contours is atleast 4,
         if len(contours) >= 4:
             for contour in contours:
-                ## store the area of the contours and the contours in the same list
+                # store the area of the contours and the contours in the same list
                 self.contour_list.append((cv2.contourArea(contour),contour))
-        ## sort the contours by area
+
+        # sort the contours by area
         self.contour_list.sort(key = lambda x: x[0], reverse=True)
 
+# class for detecting the center of each blue square on the tracker
 class Centers(object):
+
     def __init__(self):
-        """initializes variables"""
         self.corners = []
         self.main_corner = (0,0)
         self.main_corner_index = -1
@@ -52,29 +60,31 @@ class Centers(object):
         self.is_tracking = True
 
 
+    # takes in a list of contours and a masked black frame to creates a tuple of (x,y) coordinates for the center of each contour
     def update_centers(self, contour_list, mask_black):
-        """takes in a list of contours and a masked black frame to creates a tuple of (x,y) coordinates for the center of each contour"""
-        ## if there are contours in the list,
+
+        # if there are contours in the list,
         if len(contour_list) > 0:
             self.corners = []
+
             for i in range(4):
-                ## create a moment (used to find center of contour)
+                # create a moment (used to find center of contour)
                 M = cv2.moments(contour_list[i][1])
                 if M["m00"] != 0 and M["m00"] != 0:
-                    ## creates a (x, y) tuple for the contour
+                    # creates a (x, y) tuple for the contour
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                    ## add the center to a list
+                    # add the center to a list
                     self.corners.append(center)
             self.num_black_corners = 0 
+
             for i, center in enumerate(self.corners):
-                ## if the center is within the window range,
-                # if center[0] < 600 and center[1] < 450:
-                    ## grab the color at the center of the black mask,
+                    # grab the color at the center of the black mask,
                 color = mask_black[center[1], center[0]]
-                    ## if the color at the center is black
+                    # if the color at the center is black
                 if color == 255:
                     self.num_black_corners += 1
-                    ## store that information
+
+                    # store that information
                     self.main_corner_index = i
                     self.main_corner = center
 
@@ -82,57 +92,61 @@ class Centers(object):
                 self.is_tracking = True
             else:
                 self.is_tracking = False
-
-
+    # creates vectors (x,y) reference tuples from the main corner (black corner)
     def update_vectors(self):
-        """creates vectors (x,y) reference tuples from the main corner (black corner)"""
-        self.vectors = []
-        ## for each corner in corners,
 
+        self.vectors = []
+
+        # for each corner in corners,
         for i, corner in enumerate(self.corners):
             main_corner_x = self.main_corner[0]
             main_corner_y = self.main_corner[1]
             corner_x = corner[0]
             corner_y = corner[1]
 
-            ## if the main corner isnt the current index,
+            # if the main corner isnt the current index,
             if self.main_corner_index != i:
-                ## create a vector and add it to a list
+                # create a vector and add it to a list
                 self.vectors.append((corner_x - main_corner_x, corner_y - main_corner_y))
+
+    # reorganizes the centers so that they are in correct relation to each other       
     def reorganize_centers(self):
-        """reorganizes the centers so that they are in correct relation to each other"""
-        ## final_corners is the final list of organized corners
+    
+        # final_corners is the final list of organized corners
         self.final_corners = []
         self.final_corners.append(self.main_corner)
         corners = []
-        ## for each corner, only add the corner if it isnt the main corner
+
+        # for each corner, only add the corner if it isnt the main corner
         if len(self.corners) == 4:
             for i, corner in enumerate(self.corners):
                 if not(self.main_corner[0] == corner[0] and self.main_corner[1] == corner[1]):
                     corners.append(corner)
 
-            ## save the fourth corner
+            # save the fourth corner
             corner_4 = return_point_4(self.main_corner, corners[0], corners[1], corners[2])
-            ## find the quadrant clockwise to the quadrant the corners are occupying
+
+            # find the quadrant clockwise to the quadrant the corners are occupying
             quadrant = return_closest_quadrant(self.main_corner, corners[0], corners[1], corners[2])
             potential_points = []
-            ## for each corner (this finds potential points for corner_2)
+
+            # for each corner (this finds potential points for corner_2)
             for corner in corners:
-                ## if the corner is not corner 4,
+                # if the corner is not corner 4,
                 if not (corner[0] == corner_4[0] and corner[1] == corner_4[1]):
                     check_quadrant = quadrant + 1
                     if check_quadrant == 5:
                         check_quadrant = 1
-
-                    ## if the corner is within the quadrant after check quadrant,
+                    # if the corner is within the quadrant after check quadrant,
                     if check_quadrant == return_quadrant((corner[0] - self.main_corner[0], corner[1] - self.main_corner[1])):
                         ## add this to potential_points
                         potential_points.append(corner)
+
             corner_2 = (0,0)
             corner_3 = (0,0)
-            if len(potential_points) > 0:
-                ## pass potential points into return_point_2
 
+            # pass potential points into return_point_2
+            if len(potential_points) > 0:
                 corner_2 = return_point_2(quadrant, self.main_corner, potential_points)
 
             for corner in corners:
@@ -143,8 +157,10 @@ class Centers(object):
             self.final_corners.append(corner_2)
             self.final_corners.append(corner_3)
             self.final_corners.append(corner_4)
+
+    # sets self.distances to have all the distances between each corner
     def distance_of_corners(self, final_corners):
-        """sets self.distances to have all the distances between each corner"""
+
         self.distances = []
         for i in range(len(final_corners)):
             if i == 3:
@@ -155,24 +171,22 @@ class Centers(object):
     def bool_is_tracking(self):
         self.distance_of_corners(self.final_corners)
         self.distances.sort()
-        #print self.distances
-        #if len(self.distances) == :
+
         test_value = (self.distances[3] + self.distances[2])/ self.distances[0]
-        #print test_value
 
         if test_value > self.threshold:
             self.is_tracking = False
 
 
-
-
+# checks the angle in order to find corner_2
 def return_point_2(quadrant, main_corner, potential_points):
-    """checks the angle in order to find corner_2"""
-    ## if the length is one, return it
+
+    # if the length is one, return it
     if len(potential_points) == 1:
         return potential_points[0]
+
+    # create reference points in order to find the angle
     else:
-        ## create reference points in order to find the angle
         if quadrant == 1:
             reference_point = (main_corner[0], main_corner[1] - 10)
         elif quadrant == 2:
@@ -185,15 +199,14 @@ def return_point_2(quadrant, main_corner, potential_points):
         angle_2 = get_angle(main_corner, reference_point, potential_points[1])
         
         # if the angle is smaller, return that point
-
         if angle_1 < angle_2:
             return potential_points[0]
         else:
             return potential_points[1]
 
-
+# creates empty quadrants and uses return_most_clockwise_quadrant
 def return_closest_quadrant(main_corner, point_1, point_2, point_3):
-    """creates empty quadrants and uses return_most_clockwise_quadrant"""
+
     reference_point_1 = (point_1[0] - main_corner[0], point_1[1] - main_corner[1])
     reference_point_2 = (point_2[0] - main_corner[0], point_2[1] - main_corner[1])
     reference_point_3 = (point_3[0] - main_corner[0], point_3[1] - main_corner[1])
@@ -202,15 +215,17 @@ def return_closest_quadrant(main_corner, point_1, point_2, point_3):
     quadrants.append(return_quadrant(reference_point_2))
     quadrants.append(return_quadrant(reference_point_3))
     empty_quadrants = []
-
-    ## find quadrants the points are not in
+    
+    # find quadrants the points are not in
     for i in range(1, 5):
         if i not in quadrants:
             empty_quadrants.append(i)
+
     return return_most_clockwise_quadrant(empty_quadrants)
-    
+
+# returns the most clockwise quadrant the points are not in
 def return_most_clockwise_quadrant(empty_quadrants):
-    """returns the most clockwise quadrant the points are not in"""
+
     if len(empty_quadrants) == 1:
         return empty_quadrants[0]
     elif len(empty_quadrants) == 2:
@@ -238,14 +253,14 @@ def return_quadrant(point):
     else:
         return 4
 
-
+# returns the fourth corner
 def return_point_4(main_corner, point_1, point_2, point_3):
-    """returns the fourth corner"""
+
     angle_1 = get_angle(main_corner, point_1, point_2)
     angle_2 = get_angle(main_corner, point_1, point_3)
     angle_3 = get_angle(main_corner, point_2, point_3)
-    ## find the angle between the corners, only one is greater that the other
-    ## this way we can find the corner diagonal to the main corner
+
+    # find the angle between the corners, only one is greater that the other
     if(angle_1 > angle_2 and angle_1 > angle_3):
         return point_3
     elif(angle_2 > angle_3):
@@ -268,7 +283,6 @@ def is_positive(x):
 
 # class to calibrate camera for OpenCV tracking
 class Camera(object):
-
 
     def __init__(self):
         self.objpoints = [] #3d point in real world space
@@ -294,7 +308,6 @@ class Camera(object):
 
 
 # class for a 3d point
-
 class createpoint:
     def __init__(self,p,c=(1,0,0)):
         self.point_size=0.5
@@ -338,7 +351,6 @@ class createtriangle:
 # class to load stl file
 class loader:
 
-
     model=[]
       
     #return the faces of the triangles
@@ -354,7 +366,6 @@ class loader:
         glBegin(GL_TRIANGLES)
 
         for tri in self.get_triangles():
-
             glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
@@ -366,7 +377,6 @@ class loader:
     def load_stl(self,filename):
 
         # read start of file to determine if its a binay stl file or a ascii stl file
-
         fp=open(filename,'rb')
         h=fp.read(80)
         type=h[0:5]
@@ -382,7 +392,6 @@ class loader:
         self.load_binary_stl(filename)
 
     # read text stl match keywords to grab the points to build the model
-
     def load_text_stl(self,filename):
         fp=open(filename,'r')
 
@@ -410,7 +419,6 @@ class loader:
 
     # loads binary stl file using the struct library to read in and convert binary data into a format we can use
     def load_binary_stl(self,filename):
-
 
         fp=open(filename,'rb')
         h=fp.read(80)
@@ -456,8 +464,7 @@ class Webcam:
     def __init__(self):
 
         # set webcam video feed
-
-        self.video_capture = cv2.VideoCapture(0)
+        self.video_capture = cv2.VideoCapture(1)
         self.current_frame = self.video_capture.read()[1]
           
     # create thread for capturing images
@@ -475,13 +482,13 @@ class Webcam:
 
 # class for integrating OpenCV tracking with OpenGL rendering
 class AugmentedReality():
-
+ 
     # constants
     INVERSE_MATRIX = np.array([[ 1.0, 1.0, 1.0, 1.0],
                                [-1.0,-1.0,-1.0,-1.0],
                                [-1.0,-1.0,-1.0,-1.0],
                                [ 1.0, 1.0, 1.0, 1.0]])
-  
+
     def __init__(self):
 
         # initialise webcam and start thread
@@ -490,17 +497,17 @@ class AugmentedReality():
 
         # load stl
         self.model1=loader()
-        self.model1.load_stl(os.path.abspath('')+'/Test_Piece.STL')
+        self.model1.load_stl(os.path.abspath('')+'/STL/Test_Piece.STL')
  
         # textures
         self.texture_background = None
+        self.is_window_1 = True
  
 
     # calibrate the webcam to detect tracker and initialize OpenGL
     def _init_gl(self, Width, Height):
 
         # global variables to handle OpenCV tracking
-
         global contour
         global center
         global camera
@@ -511,7 +518,6 @@ class AugmentedReality():
         camera = Camera()
 
         # varibales to handle tracking
-
         blueLower = np.array([90,100,10])
         blueUpper = np.array([150,255,255])
         blackLower = np.array([0,0,0])
@@ -519,8 +525,7 @@ class AugmentedReality():
 
 
         # calibrate webcam to detect tracker
-        images = glob.glob('*.png')
-
+        images = glob.glob(os.path.abspath('') + '/Pictures/*calibration*.png')
 
         for fname in images:
             img = cv2.imread(fname)
@@ -542,7 +547,6 @@ class AugmentedReality():
                 cv2.CHAIN_APPROX_SIMPLE)
 
             # updates each of the elements in the classes
-
             contour.update_contours(contour_information)
             center.update_centers(contour.contour_list, mask_black)
             center.reorganize_centers()
@@ -551,13 +555,13 @@ class AugmentedReality():
         camera.calibrate_camera(gray)
 
 
-        # initialize OpenGL
-
+        self._set_textures() 
+       
+    def _set_textures(self):
         glClearColor(0.0, 0.0, 0.0, 0.0)
         glClearDepth(1.0)
         glDepthFunc(GL_LESS)
         glEnable(GL_DEPTH_TEST)
-
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(33.7, 1.3, 0.1, 100.0)
@@ -592,30 +596,31 @@ class AugmentedReality():
         lightPos1 = [-1.0, 0.5, 0.5, 0.0]
         glLightfv(GL_LIGHT1, GL_DIFFUSE, lightColor1)
         glLightfv(GL_LIGHT1, GL_POSITION, lightPos1)   
-       
-
     # function continuously called by Glut to display the webcam feed and render the stl
     def _draw_scene(self):
+        glutSetWindow(self.window_id)
 
         # clear Screen
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
  
         # get image from webcam
         image = self.webcam.get_current_frame()
-        image = cv2.flip(image,0)
+        #image = cv2.flip(image,0)
         image = cv2.flip(image,1)
  
         # convert image to OpenGL texture format
-        bg_image_right_crop = image[:,140:460]
-
-        bg_image_right = Image.fromarray(bg_image_right_crop)     
+        bg_image_right_crop = image
+        #bg_image_right_crop = image[:,140:460]
+        #bg_image_right_test = bg_image_right_crop
+        bg_image_right_crop = cv2.flip(bg_image_right_crop, 0)
+        bg_image_right_crop = cv2.flip(bg_image_right_crop, 1)
+        bg_image_right = Image.fromarray(bg_image_right_crop)
         ix = bg_image_right.size[0]
         iy = bg_image_right.size[1]
         bg_image_right = bg_image_right.tostring("raw", "BGRX", 0, -1)
 
-        glViewport(width/2,0,width/2,height)
+        #glViewport(width/2,0,width/2,height)
 
         # disable lighting and enable textures for background
         glDisable(GL_LIGHTING)  
@@ -639,29 +644,42 @@ class AugmentedReality():
         glDisable(GL_TEXTURE_2D)
 
         # handle glyph
-        self._handle_glyph(bg_image_right_crop)
+        self._handle_glyph(image)
 
-        #bg_image_left = cv2.flip(bg_image, 1)
-        bg_image_left_crop = image[:,180:500]
+        glutSwapBuffers()
 
-        bg_image_left = Image.fromarray(bg_image_left_crop) 
-        ix = bg_image_left.size[0]
-        iy = bg_image_left.size[1]
-        bg_image_left = bg_image_left.tostring("raw", "BGRX", 0, -1)
+        glutSetWindow(self.window_id_2) 
+        # clear Screen
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity()
 
-        glViewport(0, 0, width/2, height)
+        # get image from webcam
+        image = self.webcam.get_current_frame()
+        #image = cv2.flip(image,0)
+        image = cv2.flip(image,1)
+ 
+        # convert image to OpenGL texture format
+        bg_image_right_crop = image
+        #bg_image_right_crop = image[:,140:460]
+        #bg_image_right_test = bg_image_right_crop
+        bg_image_right_crop = cv2.flip(bg_image_right_crop, 0)
+        bg_image_right_crop = cv2.flip(bg_image_right_crop, 1)
+        bg_image_right = Image.fromarray(bg_image_right_crop)     
+        ix = bg_image_right.size[0]
+        iy = bg_image_right.size[1]
+        bg_image_right = bg_image_right.tostring("raw", "BGRX", 0, -1)
+
+        #glViewport(width/2,0,width/2,height)
 
         # disable lighting and enable textures for background
         glDisable(GL_LIGHTING)  
         glEnable(GL_TEXTURE_2D)
 
-
         # create background texture
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image_left)
-
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image_right)
         
         # draw background
         glBindTexture(GL_TEXTURE_2D, self.texture_background)
@@ -675,8 +693,43 @@ class AugmentedReality():
         glDisable(GL_TEXTURE_2D)
 
         # handle glyph
-        self._handle_glyph(bg_image_left_crop)
- 
+        self._handle_glyph(image)
+        """
+        #bg_image_left = cv2.flip(bg_image, 1)
+        bg_image_left_crop = image
+        #bg_image_left_crop = image[:,180:500]
+        bg_image_left_crop = cv2.flip(bg_image_left_crop, 0)
+        #bg_image_left_crop = cv2.flip(bg_image_left_crop, 1)
+        bg_image_left = Image.fromarray(bg_image_left_crop) 
+        ix = bg_image_left.size[0]
+        iy = bg_image_left.size[1]
+        bg_image_left = bg_image_left.tostring("raw", "BGRX", 0, -1)
+
+        glViewport(0, 0, width/2, height)
+        # disable lighting and enable textures for background
+        glDisable(GL_LIGHTING)  
+        glEnable(GL_TEXTURE_2D)
+
+        # create background texture
+        glBindTexture(GL_TEXTURE_2D, self.texture_background)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, bg_image_left)
+        
+        # draw background
+        glBindTexture(GL_TEXTURE_2D, self.texture_background)
+        glPushMatrix()
+        glTranslatef(0.0,0.0,-30.0)
+        self._draw_background()
+        glPopMatrix()
+
+        # enable Lighting and disable textures for stl
+        glEnable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
+
+        # handle glyph
+        self._handle_glyph(image)
+        """
         # display window
         glutSwapBuffers()
  
@@ -687,7 +740,6 @@ class AugmentedReality():
         # attempt to detect tracker from OpenCV
         rvecs = None
         tvecs = None
-
         try:
             rvecs, tvecs = self.detect_glyph(image)
         except Exception as ex: 
@@ -698,7 +750,6 @@ class AugmentedReality():
             return
  
         # build reference matrix from OpenCV
-
         rmtx = cv2.Rodrigues(rvecs)[0]
  
         view_matrix = np.array([[rmtx[0][0],rmtx[0][1],rmtx[0][2],tvecs[0]],
@@ -711,11 +762,15 @@ class AugmentedReality():
         view_matrix = np.transpose(view_matrix)
  
         # load reference matrix from OpenCV as drawing space for OpenGL
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity();
+        gluPerspective(45, 1.3, 0.1, 100.0)
+        glMatrixMode(GL_MODELVIEW);
         glPushMatrix()
         glLoadMatrixd(view_matrix)
 
         # rotates and scales the stl
-        glRotatef(angle, 0, 0, 1.0)
+        #glRotatef(angle, 0, 0, 1.0)
         glScale(.01, .01, .01)
 
         # draws stl
@@ -727,6 +782,10 @@ class AugmentedReality():
     def _draw_background(self):
 
         # draws webcam image as a texture on an OpenGL quad
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity();
+        gluPerspective(33.7, 1.3, 0.1, 100.0)
+        glMatrixMode(GL_MODELVIEW);
         glBegin(GL_QUADS)
         glTexCoord2f(0.0, 1.0); glVertex3f(-12.0, -9.0, 0.0)
         glTexCoord2f(1.0, 1.0); glVertex3f( 12.0, -9.0, 0.0)
@@ -757,18 +816,16 @@ class AugmentedReality():
     def detect_glyph(self, image):
 
         # global variables for OpenCV tracking
-
         global camera
         global contour
         global center
 
         # format image for tracking
-        frame = imutils.resize(image, width = 320)
-        frame = cv2.flip(frame, 0)
-        # frame = cv2.flip(frame, 1)
+        frame = imutils.resize(image, width = 750)
+        #frame = cv2.flip(frame, 0)
+        frame = cv2.flip(frame, 1)
 
         # color space
-
         blueLower = np.array([90,100,10])
         blueUpper = np.array([150,255,255])
         blackLower = np.array([0,0,0])
@@ -788,7 +845,6 @@ class AugmentedReality():
             cv2.CHAIN_APPROX_SIMPLE)
 
         # updates each of the elements in the classes
-
         contour.update_contours(contour_information)
         center.update_centers(contour.contour_list, mask_black)
 
@@ -803,7 +859,6 @@ class AugmentedReality():
                 dtype = np.float32), camera.mtx, camera.dist)
 
         # if not, return None
-
         else:
             rvecs = tvecs = None
 
@@ -819,7 +874,6 @@ class AugmentedReality():
         if key == chr(27):
             # if the esc key is pressed, the program will exit
             os._exit(0)
-
         if key == chr(32):
             # if spacebar is pressed, the stl file will start rotating
             turning = not turning
@@ -839,18 +893,20 @@ class AugmentedReality():
         # initialize window size and Glut
         glutInit(sys.argv)
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-        glutInitWindowSize(width, height)
-        glutInitWindowPosition(width, height)
-
-        # create window and set glut functions
-        glutCreateWindow("#GetREAL")
+        glutInitWindowSize(1300, 1060)
+        glutInitWindowPosition(0, 0)
+        self.window_id = glutCreateWindow("#GetREAL")
+        self._set_textures()
+        glutInitWindowSize(1300, 1060)
+        glutInitWindowPosition(1200, 0)
+        self.window_id_2 = glutCreateWindow("#GetREAL2")
         glutDisplayFunc(self._draw_scene)
         glutIdleFunc(self._draw_scene)
         glutKeyboardFunc(self.keyboard)
         glutTimerFunc(25, self.update, 0)
         self._init_gl(width, height)
 
-        glutFullScreen()
+        #glutFullScreen()
 
         # run Glut
         glutMainLoop()
@@ -859,8 +915,8 @@ class AugmentedReality():
 if __name__ == '__main__':
 
     # screen aspect ratio
-    width = int(1280*1.5)
-    height = int(720*1.5)
+    width = 1280
+    height = 720
 
     # run an instance of AugmentedReality 
     GetREAL = AugmentedReality()

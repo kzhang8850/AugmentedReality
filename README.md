@@ -19,25 +19,22 @@ Using #GetReal requires some extra hardware in addition to software dependencies
 
  - Google Cardboard (or some other VR headset)
  - High Performance Webcam
- - 3D Camera Lens (from Amazon)
  - A smartphone (ios or android)
- - Duet Display (from app store)
- - Two blue post-it notes and a green post-it note to form a right isosceles triangle where the green post-it is at the 90 degree corner
- - other stuff TBD
+ - Splashtop Streamer (from app store)
+ - Four blue post-it notes in a square, with one blue post-it colored black in the center.
  
 Once you have all your hardware, you will also need to download Python and the following python packages:
  
  - Pip `$sudo install pip`
  - OpenCV `$sudo pip install opencv`
  - OpenGL (download from website http://pyopengl.sourceforge.net/documentation/installation.html)
- - Pyglet/Pygame `$pip install pygame`
+ - sudo `$pip install numpy-stl`
  - Numpy `$pip install numpy`
  - other stuff TBD
- 
 
 ##Usage
- 
-After you have your environment configured, take the CAD file you want to view and copy it into the folder that contains our Github repository. The only required input for the code to run is an .stl file. Once you have everything set up, just plug it all in and run GetReal.py! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes were. Try walking around it and viewing it from different angles, and you should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!
+
+After you have your environment configured, take the CAD file you want to view and save it as a binary .stl. Copy it into the folder that contains our Github repository. Once you have everything set up, first, set up the computer to phone connection. Run Splashtop on your computer and phone, and pair them together. Once you see your computer screen on your phone, run GetReal.py, and insert the name of the .stl. You are all ready to view the CAD model! From your Google Cardboard, you should see your CAD model augmented into 3D space where your post it notes are. Try walking around it and viewing it from different angles. You should see the CAD model in its entirety, as if it was right in front of you. Have fun prototyping!
 
 
 ##Acknowledgements
@@ -67,3 +64,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+

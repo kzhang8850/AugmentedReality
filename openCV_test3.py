@@ -66,15 +66,14 @@ class Centers(object):
             self.num_black_corners = 0 
             for i, center in enumerate(self.corners):
                 ## if the center is within the window range,
-                if center[0] < 600 and center[1] < 450:
-                    ## grab the color at the center of the black mask,
-                    color = mask_black[center[1], center[0]]
-                    ## if the color at the center is black
-                    if color == 255:
-                        self.num_black_corners += 1
-                        ## store that information
-                        self.main_corner_index = i
-                        self.main_corner = center
+                ## grab the color at the center of the black mask,
+                color = mask_black[center[1], center[0]]
+                ## if the color at the center is black
+                if color == 255:
+                    self.num_black_corners += 1
+                    ## store that information
+                    self.main_corner_index = i
+                    self.main_corner = center
             if self.num_black_corners == 1:
                 self.is_tracking = True
             else:
@@ -346,7 +345,7 @@ def program(mesh_grid):
 
     blackLower = np.array([0,0,0])
     blackUpper = np.array([180, 255, 150])
-    images = glob.glob('*.png')
+    images = glob.glob('*Frame*.png')
     for fname in images:
         img = cv2.imread(fname)
         hsv_frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -369,8 +368,29 @@ def program(mesh_grid):
         center.update_centers(contour.contour_list, mask_black)
         center.reorganize_centers()
         camera.grab_frame_information(img, center.final_corners)
+        
+        for i, corner in enumerate(center.final_corners):
+                    ## for each corner, color each one a different color
+                    if i == 0:
+                        ##print 'green'
+                        cv2.circle(img, corner, 20, (0,255,0), thickness=-1)
+                    elif i == 1:
+                        ##print 'red'
+                        cv2.circle(img, corner, 15, (0,0,255), thickness=-1)
+                    elif i == 2:
+                        ##print 'yellow'
+                        cv2.circle(img, corner, 10, (0,255,255), thickness=-1)
+                    else:
+                        ##print 'white'
+                        cv2.circle(img, corner, 5, (255,255,255), thickness=-1)
+        #cv2.imshow("calibration", img)
+        
+        #cv2.waitKey(300)
 
     cap = cv2.VideoCapture(0)
+    #cap.set(3,848)
+    #cap.set(4,470)
+    #cap.set(15, 0.1)
     ## keep looping
     ret, frame = cap.read()
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -379,14 +399,15 @@ def program(mesh_grid):
     while True:
         ## grab the current frame
         ret, frame = cap.read()
-    
+        #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+        #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        frame = frame[:,140:460]
         ## resize the frame, blur it, and convert it to the HSV
-        frame = imutils.resize(frame, width=600)
+        frame = imutils.resize(frame, width=600,)
         frame = cv2.flip(frame,1)
-        cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
-        cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
-        cv2.imshow("test",img)
-        cv2.imshow("test", frame)
+        #cv2.namedWindow("test", cv2.WND_PROP_FULLSCREEN)          
+        #cv2.setWindowProperty("test", cv2.WND_PROP_FULLSCREEN, cv2.cv.CV_WINDOW_FULLSCREEN)
+        cv2.imshow("cut_frame", frame)
         ## color space
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         ## construct a mask for the color "blue", then remove any imperfections
@@ -457,6 +478,7 @@ def program(mesh_grid):
                     reference_point_y = center.main_corner[1] + vector[1]
                     points = np.array([center.main_corner, (reference_point_x, reference_point_y)])
                     cv2.polylines(frame, np.int32([points]), True, (0,255,0), 3)
+            print center.main_corner
         ## shows each video analysis in different windows
         cv2.imshow("Mask", mask_blue)
         cv2.imshow("MaskBlack", mask_black)

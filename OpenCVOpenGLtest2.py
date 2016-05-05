@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -17,6 +20,13 @@ import os
 import struct
 
 import sys
+
+
+import rospy
+from sensor_msgs.msg import Image as chicken
+from copy import deepcopy
+from cv_bridge import CvBridge
+import time
 
 class Contours(object):
     def __init__(self):
@@ -446,24 +456,35 @@ class draw_scene:
         glScale(.01, .01, .01)
         self.model1.draw()
 
-class Webcam:
-  
-    def __init__(self):
-        self.video_capture = cv2.VideoCapture(0)
-        self.current_frame = self.video_capture.read()[1]
-          
-    # create thread for capturing images
-    def start(self):
-        Thread(target=self._update_frame, args=()).start()
-  
-    def _update_frame(self):
-        while(True):
-            self.current_frame = self.video_capture.read()[1]
-            
-                  
-    # get the current frame
-    def get_current_frame(self):
-        return self.current_frame
+class Webcam(object):
+    """ The BlobDetector is a Python object that encompasses a ROS node 
+        that can process images from the camera and search for blobs within """
+    def __init__(self, image_topic):
+        """ Initialize the blob detector """
+        rospy.init_node('cam_detector')
+        self.cv_image = None                        # the latest image from the camera
+        self.bridge = CvBridge()                    # used to convert ROS messages to OpenCV
+        rospy.Subscriber(image_topic, chicken, self.process_image)
+
+
+    def process_image(self, msg):
+        """ Process image messages from ROS and stash them in an attribute
+            called cv_image for subsequent processing """
+
+        global webcam_image
+        self.cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="rgb8")
+        # cv2.imshow('frame', self.cv_image)
+        # cv2.waitKey(5)
+        webcam_image = self.cv_image
+
+
+    def run(self):
+        """ The main run loop, in this node it doesn't do anything """
+        r = rospy.Rate(5)
+        while not rospy.is_shutdown():
+            print 'chicken'
+            r.sleep()
+
  
 class OpenGLGlyphs:
  
@@ -475,8 +496,8 @@ class OpenGLGlyphs:
   
     def __init__(self):
         # initialise webcam and start thread
-        self.webcam = Webcam()
-        self.webcam.start()
+        self.webcam = Webcam("/camera/image_raw")
+        self.webcam.run()
  
         # textures
         self.texture_background = None
@@ -554,11 +575,13 @@ class OpenGLGlyphs:
        
 
     def _draw_scene(self):
+
+        global webcam_image
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
  
         # get image from webcam
-        image = self.webcam.get_current_frame()
+        image = webcam_image
  
         # convert image to OpenGL texture format
         bg_image = cv2.flip(image, 0)
@@ -672,6 +695,7 @@ class OpenGLGlyphs:
 
         glutTimerFunc(25, self.update, 0)
         self._init_gl(width, height)
+        print 'chicken2'
         glutMainLoop()
 
     def detect_glyph(self, image):
